@@ -5,16 +5,10 @@
   const topicSelect = document.getElementById("topicSelect");
   const newTopicInput = document.getElementById("newTopicInput");
   const createTopicBtn = document.getElementById("createTopicBtn");
-  const deleteTopicBtn = document.getElementById("deleteTopicBtn");
   const argumentInput = document.getElementById("argumentInput");
   const proList = document.getElementById("proList");
   const contraList = document.getElementById("contraList");
   const emptyState = document.getElementById("emptyState");
-  const boardTitle = document.getElementById("boardTitle");
-  const topicCounter = document.getElementById("topicCounter");
-  const proCount = document.getElementById("proCount");
-  const contraCount = document.getElementById("contraCount");
-  const clearAllBtn = document.getElementById("clearAllBtn");
   const toast = document.getElementById("toast");
   const summariesSection = document.getElementById("summariesSection");
   const summariesList = document.getElementById("summariesList");
@@ -66,20 +60,6 @@
     return summaries;
   }
 
-  function formatDate(ts) {
-    try {
-      return new Date(ts).toLocaleString(undefined, {
-        year: "numeric",
-        month: "short",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-    } catch {
-      return "";
-    }
-  }
-
   function formatDateShort(dateStr) {
     try {
       return new Date(dateStr + "T12:00:00").toLocaleDateString(undefined, {
@@ -111,28 +91,15 @@
     return found ?? topics[0];
   }
 
-  function updateCounters(selectedTopic) {
-    topicCounter.textContent = String(topics.length);
-    clearAllBtn.disabled = topics.length === 0;
-
-    const proN = selectedTopic ? arguments_.filter((a) => a.side === "pro").length : 0;
-    const contraN = selectedTopic ? arguments_.filter((a) => a.side === "contra").length : 0;
-
-    proCount.textContent = String(proN);
-    contraCount.textContent = String(contraN);
-  }
-
   function renderTopics(selectedTopic) {
     topicSelect.innerHTML = "";
 
     if (topics.length === 0) {
       topicSelect.disabled = true;
-      deleteTopicBtn.disabled = true;
       return;
     }
 
     topicSelect.disabled = false;
-    deleteTopicBtn.disabled = false;
 
     const frag = document.createDocumentFragment();
     for (const t of topics) {
@@ -158,24 +125,6 @@
     body.className = "noteBody";
     body.textContent = arg.text;
     li.appendChild(body);
-
-    const actions = document.createElement("div");
-    actions.className = "argumentActions";
-
-    const deleteBtn = document.createElement("button");
-    deleteBtn.type = "button";
-    deleteBtn.className = "iconBtn iconBtnDanger";
-    deleteBtn.textContent = "Delete";
-    deleteBtn.addEventListener("click", () => deleteArgument(topicId, arg.id));
-
-    const meta = document.createElement("span");
-    meta.className = "muted";
-    meta.style.fontSize = "11px";
-    meta.textContent = formatDate(arg.createdAt);
-
-    actions.appendChild(meta);
-    actions.appendChild(deleteBtn);
-    li.appendChild(actions);
 
     return li;
   }
@@ -236,19 +185,14 @@
     argumentInput.disabled = !hasTopic;
     opinionForm.querySelector('button[type="submit"]').disabled = !hasTopic;
 
-    if (boardTitle) {
-      boardTitle.textContent = selectedTopic ? selectedTopic.title : "Arguments";
-    }
-
-    updateCounters(selectedTopic);
     renderBoard(selectedTopic);
     renderSummaries();
 
     if (!topics.length) {
-      emptyState.textContent = "No topics yet. Create one on the left.";
+      emptyState.textContent = "No topics yet. Create one below.";
       setEmptyStateVisible(true);
     } else if (selectedTopic && arguments_.length === 0 && summaries.length === 0) {
-      emptyState.textContent = "No arguments yet. Write the first one on the left. Daily AI summaries appear here.";
+      emptyState.textContent = "No arguments yet. Write the first one on the right. Daily AI summaries appear here.";
       setEmptyStateVisible(true);
     } else {
       setEmptyStateVisible(false);
@@ -268,29 +212,6 @@
     await loadSummaries(selectedTopicId);
     render();
     showToast("Topic created");
-  }
-
-  async function deleteTopic(id) {
-    const topic = topics.find((t) => t.id === id);
-    if (!topic) return;
-
-    const ok = window.confirm(
-      `Delete topic "${topic.title}" and all its arguments? This cannot be undone.`
-    );
-    if (!ok) return;
-
-    await api(`/api/topics/${id}`, { method: "DELETE" });
-    await loadTopics();
-    selectedTopicId = topics[0]?.id ?? null;
-    if (selectedTopicId) {
-      await loadArguments(selectedTopicId);
-      await loadSummaries(selectedTopicId);
-    } else {
-      arguments_ = [];
-      summaries = [];
-    }
-    render();
-    showToast("Topic deleted");
   }
 
   async function addArgument(topicId, side, text) {
@@ -315,30 +236,6 @@
     await loadArguments(topicId);
     render();
     showToast("Argument posted");
-  }
-
-  async function deleteArgument(topicId, argumentId) {
-    await api(`/api/topics/${topicId}/arguments/${argumentId}`, { method: "DELETE" });
-    await loadArguments(topicId);
-    render();
-    showToast("Argument deleted");
-  }
-
-  async function clearAll() {
-    if (topics.length === 0) return;
-    const ok = window.confirm("Clear all topics and arguments? This cannot be undone.");
-    if (!ok) return;
-
-    for (const t of topics) {
-      await api(`/api/topics/${t.id}`, { method: "DELETE" });
-    }
-    topics = [];
-    selectedTopicId = null;
-    arguments_ = [];
-    summaries = [];
-    await loadTopics();
-    render();
-    showToast("All cleared");
   }
 
   async function onTopicChange() {
@@ -368,12 +265,6 @@
 
   topicSelect.addEventListener("change", onTopicChange);
 
-  deleteTopicBtn.addEventListener("click", () => {
-    const selected = getSelectedTopic();
-    if (!selected) return;
-    deleteTopic(selected.id);
-  });
-
   opinionForm.addEventListener("submit", (e) => {
     e.preventDefault();
     const selected = getSelectedTopic();
@@ -393,8 +284,6 @@
       opinionForm.requestSubmit();
     }
   });
-
-  clearAllBtn.addEventListener("click", clearAll);
 
   async function init() {
     try {
