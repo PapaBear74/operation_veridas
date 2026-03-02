@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Debate Board</title>
+    <meta
+      name="description"
+      content="Create topics and post pro/contra arguments. Daily AI summaries."
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="header">
+        <div>
+          <h1>Debate Board</h1>
+          <p class="subtitle">
+            Create a topic, then post <strong>Pro</strong> or <strong>Contra</strong> arguments.
+            Daily AI summaries.
+          </p>
+        </div>
+        <div class="headerActions">
+          <button id="clearAllBtn" class="btn btnDanger" type="button">
+            Clear all
+          </button>
+        </div>
+      </header>
+
+      <main class="content">
+        <section class="composer" aria-label="Write an argument">
+          <form id="opinionForm" class="composerForm" autocomplete="off">
+            <div class="field">
+              <div class="fieldLabelRow">
+                <span class="fieldLabel">Topic</span>
+              </div>
+
+              <div class="topicRow">
+                <select id="topicSelect" aria-label="Select a topic"></select>
+                <button id="deleteTopicBtn" class="btn" type="button" title="Delete selected topic">
+                  Delete topic
+                </button>
+              </div>
+
+              <div class="topicRow">
+                <input
+                  id="newTopicInput"
+                  name="newTopic"
+                  type="text"
+                  maxlength="80"
+                  placeholder="Create a new topic…"
+                />
+                <button id="createTopicBtn" class="btn btnPrimary" type="button">Create</button>
+              </div>
+            </div>
+
+            <fieldset class="field">
+              <legend class="fieldLabel">Choose your side</legend>
+              <div class="segmented" role="radiogroup" aria-label="Choose Pro or Contra">
+                <label class="segmentedOption">
+                  <input type="radio" name="side" value="pro" checked />
+                  <span class="segmentedPill segmentedPillPro">Pro</span>
+                </label>
+                <label class="segmentedOption">
+                  <input type="radio" name="side" value="contra" />
+                  <span class="segmentedPill segmentedPillContra">Contra</span>
+                </label>
+              </div>
+            </fieldset>
+
+            <label class="field">
+              <span class="fieldLabel">Argument</span>
+              <textarea
+                id="argumentInput"
+                name="argument"
+                rows="6"
+                maxlength="5000"
+                placeholder="Write your argument…"
+                required
+              ></textarea>
+            </label>
+
+            <div class="composerRow">
+              <div class="hint" id="hintText">
+                Tip: Press <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to send.
+              </div>
+              <button class="btn btnPrimary" type="submit">Send</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="notes" aria-label="Arguments board">
+          <div class="notesHeader">
+            <h2 id="boardTitle">Arguments</h2>
+            <div class="counter" id="topicCounter">0</div>
+          </div>
+
+          <div id="emptyState" class="emptyState" role="status" aria-live="polite">
+            No topics yet. Create one on the left.
+          </div>
+
+          <div id="summariesSection" class="summariesSection" style="display:none">
+            <h3 class="summariesTitle">Daily AI Summaries</h3>
+            <div id="summariesList" class="summariesList"></div>
+          </div>
+
+          <div id="board" class="board" aria-label="Arguments list">
+            <div class="boardCols" aria-label="Pro and Contra columns">
+              <div class="boardCol">
+                <div class="boardColHeader">
+                  <span class="pill pillPro">Pro</span>
+                  <span class="muted" id="proCount">0</span>
+                </div>
+                <ol id="proList" class="notesList" aria-label="Pro arguments"></ol>
+              </div>
+              <div class="boardCol">
+                <div class="boardColHeader">
+                  <span class="pill pillContra">Contra</span>
+                  <span class="muted" id="contraCount">0</span>
+                </div>
+                <ol id="contraList" class="notesList" aria-label="Contra arguments"></ol>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+    <script src="./app.js" defer></script>
+  </body>
+</html>
