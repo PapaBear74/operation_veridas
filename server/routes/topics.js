@@ -6,7 +6,7 @@ const router = Router();
 router.get("/", async (req, res) => {
   try {
     const { rows } = await pool.query(
-      `SELECT id, title, created_at FROM topics ORDER BY created_at DESC`
+      `SELECT id, title, created_at FROM topics WHERE approved = true ORDER BY created_at DESC`
     );
     res.json(rows.map((r) => ({ ...r, createdAt: r.created_at?.getTime?.() ?? r.created_at })));
   } catch (err) {
@@ -23,7 +23,7 @@ router.post("/", async (req, res) => {
   }
   try {
     const { rows } = await pool.query(
-      `INSERT INTO topics (title) VALUES ($1) RETURNING id, title, created_at`,
+      `INSERT INTO topics (title, approved) VALUES ($1, false) RETURNING id, title, created_at`,
       [trimmed]
     );
     const t = rows[0];

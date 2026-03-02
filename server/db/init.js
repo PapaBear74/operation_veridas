@@ -1,3 +1,4 @@
+import "dotenv/config";
 import pg from "pg";
 import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
@@ -13,8 +14,11 @@ const schema = `
 CREATE TABLE IF NOT EXISTS topics (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   title TEXT NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  approved BOOLEAN DEFAULT false
 );
+
+ALTER TABLE topics ADD COLUMN IF NOT EXISTS approved BOOLEAN DEFAULT false;
 
 CREATE TABLE IF NOT EXISTS arguments (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

@@ -211,7 +211,7 @@
     await loadArguments(selectedTopicId);
     await loadSummaries(selectedTopicId);
     render();
-    showToast("Topic created");
+    showToast("Topic submitted. It will appear after approval.");
   }
 
   async function addArgument(topicId, side, text) {
