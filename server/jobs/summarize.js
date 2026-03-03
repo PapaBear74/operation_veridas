@@ -80,6 +80,10 @@ Deine Aufgabe:
    - Persönliche Daten (Adressen, Telefonnummern etc.).
 4. Maximal ${maxPro} Pro-Punkte und maximal ${maxContra} Contra-Punkte.
 5. Jeder Punkt soll wie ein einzelnes, kurzes Argument klingen (max. 1–2 Sätze).
+6. Du bist NICHT gezwungen, jedes eingereichte Argument zu übernehmen. Wenn ein Argument
+   sinnlos, unsachlich, Spam oder komplett irrelevant ist, lass es einfach weg.
+   Wenn ALLE Argumente einer Seite wertlos sind, gib für diese Seite ein leeres Array zurück.
+   Wenn alles Trash ist: {"pro": [], "contra": []}.
 
 Gib NUR gültiges JSON zurück, ohne Erklärungstext:
 
