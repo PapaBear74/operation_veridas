@@ -69,11 +69,17 @@ ${contraArgs.length ? contraArgs.map((t, i) => `${i + 1}. ${t}`).join("\n") : "(
 Deine Aufgabe:
 1. KOMPRIMIERE die vorhandenen Argumente. Verwende NUR Informationen aus den obigen Texten.
    Erfinde KEINE neuen Inhalte, Beispiele, Fakten oder Szenarien.
-2. Wenn ein einzelnes Argument mehrere verschiedene Punkte enthält, TEILE es in separate Argumente auf.
-3. Fasse sehr ähnliche oder doppelte Argumente zu einem zusammen.
-4. Entferne Beleidigungen, persönliche Daten, Off-Topic-Kommentare und irrelevante Teile.
-5. Maximal ${maxPro} Pro-Punkte und maximal ${maxContra} Contra-Punkte.
-6. Jeder Punkt soll wie ein einzelnes, kurzes Argument klingen (max. 1–2 Sätze).
+2. Fasse sehr ähnliche oder doppelte Argumente zu einem zusammen.
+3. Entferne KOMPLETT:
+   - Beleidigungen und Beschimpfungen.
+   - Argumente, die einzelne Personen beim Vornamen oder Nachnamen nennen,
+     AUSSER es handelt sich um allgemein bekannte Staatsoberhäupter oder Politiker
+     (z.B. Trump, Putin, Netanjahu, Khamenei). Beispiele die IMMER entfernt werden müssen:
+     "Abdullah ist eine Gefahr", "Max ist böse", "Mein Nachbar Ali sagt...".
+   - Off-Topic-Kommentare und alles, was nicht sachlich zum Thema beiträgt.
+   - Persönliche Daten (Adressen, Telefonnummern etc.).
+4. Maximal ${maxPro} Pro-Punkte und maximal ${maxContra} Contra-Punkte.
+5. Jeder Punkt soll wie ein einzelnes, kurzes Argument klingen (max. 1–2 Sätze).
 
 Gib NUR gültiges JSON zurück, ohne Erklärungstext:
 
