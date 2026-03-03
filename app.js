@@ -12,6 +12,7 @@
   const toast = document.getElementById("toast");
   const summariesSection = document.getElementById("summariesSection");
   const summariesList = document.getElementById("summariesList");
+  const summariesLoading = document.getElementById("summariesLoading");
 
   /** @typedef {"pro" | "contra"} Side */
   /** @typedef {{id:string, side:Side, text:string, createdAt:number}} Argument */
@@ -229,14 +230,27 @@
 
     const safeSide = side === "contra" ? "contra" : "pro";
 
-    await api(`/api/topics/${topicId}/arguments`, {
-      method: "POST",
-      body: JSON.stringify({ side: safeSide, text: trimmed }),
-    });
-    await loadArguments(topicId);
-    await loadSummaries(topicId);
-    render();
-    showToast("Argument posted");
+    if (summariesLoading) {
+      summariesLoading.style.display = "inline-block";
+    }
+
+    try {
+      await api(`/api/topics/${topicId}/arguments`, {
+        method: "POST",
+        body: JSON.stringify({ side: safeSide, text: trimmed }),
+      });
+      await loadArguments(topicId);
+      await loadSummaries(topicId);
+      render();
+      showToast("Argument posted");
+    } catch (err) {
+      showToast("Failed to post argument");
+      console.error(err);
+    } finally {
+      if (summariesLoading) {
+        summariesLoading.style.display = "none";
+      }
+    }
   }
 
   async function onTopicChange() {

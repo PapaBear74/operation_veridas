@@ -113,6 +113,9 @@ export async function runDailySummarization(dateStr = null, topicId = null) {
       }).catch(() => {});
       // #endregion agent log
 
+      const maxProPoints = Math.min(5, proArgs.length);
+      const maxContraPoints = Math.min(5, contraArgs.length);
+
       const prompt = `Fasse die folgenden Argumente zum Thema "${topic.title}" vom ${dateOnly} zusammen.
 
 Pro-Argumente:
@@ -122,12 +125,16 @@ Contra-Argumente:
 ${contraArgs.map((t) => `- ${t}`).join("\n")}
 
 Deine Aufgabe:
-- Gruppiere ähnliche Punkte.
-- Formuliere daraus maximal 5 eigenständige Pro-Argumente und maximal 5 eigenständige Contra-Argumente.
+- Du hast insgesamt ${proArgs.length} Pro-Argument(e) und ${contraArgs.length} Contra-Argument(e).
+- Gruppiere ähnliche Punkte und fasse sie in eigenständige, klare Argumente zusammen.
+- Erzeuge höchstens ${maxProPoints} Pro-Punkte und höchstens ${maxContraPoints} Contra-Punkte.
+- Erzeuge niemals mehr Pro-Punkte als es ursprüngliche Pro-Argumente gibt und niemals mehr Contra-Punkte
+  als ursprüngliche Contra-Argumente. Wenn es weniger gibt, gib nur so viele Punkte aus.
 - Jedes Argument soll so klingen, als hätte eine andere Person es als einzelnen Beitrag geschrieben
-  (also wie ein eigener kurzer Standpunkt, kein Fließtext, keine Ich-Form).
-- Ignoriere Inhalte, die nicht wirklich zum Thema gehören oder nur Randbemerkungen sind.
-- Bleibe inhaltlich möglichst nah an den eingereichten Argumenten.
+  (also wie ein eigener kurzer Standpunkt, keine Ich-Form, keine langen Fließtexte).
+- Ignoriere Inhalte, die nichts mit dem Thema zu tun haben, beleidigend, persönlich oder unnötig sind
+  (z.B. Namen, persönliche Daten, Off-Topic-Kommentare).
+- Erfinde keine neuen Argumente, sondern bleibe inhaltlich möglichst nah an den eingereichten Argumenten.
 
 Gib NUR folgenden Aufbau zurück:
 
