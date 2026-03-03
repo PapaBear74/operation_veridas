@@ -75,15 +75,13 @@ Deine Aufgabe:
    - Argumente, die einzelne Personen beim Vornamen oder Nachnamen nennen,
      AUSSER es handelt sich um allgemein bekannte Staatsoberhäupter oder Politiker
      (z.B. Trump, Putin, Netanjahu, Khamenei). Beispiele die IMMER entfernt werden müssen:
-     "Abdullah ist eine Gefahr", "Max ist böse", "Mein Nachbar Ali sagt...".
+     "Gustaf ist eine Gefahr", "Fred ist böse", "Mein Nachbar Hakan sagt...".
    - Off-Topic-Kommentare und alles, was nicht sachlich zum Thema beiträgt.
    - Persönliche Daten (Adressen, Telefonnummern etc.).
+   - Wenn nach dem Filtern KEINE brauchbaren Argumente übrig bleiben,
+   gib leere Arrays zurück: {"pro": [], "contra": []}.
 4. Maximal ${maxPro} Pro-Punkte und maximal ${maxContra} Contra-Punkte.
 5. Jeder Punkt soll wie ein einzelnes, kurzes Argument klingen (max. 1–2 Sätze).
-6. Du bist NICHT gezwungen, jedes eingereichte Argument zu übernehmen. Wenn ein Argument
-   sinnlos, unsachlich, Spam oder komplett irrelevant ist, lass es einfach weg.
-   Wenn ALLE Argumente einer Seite wertlos sind, gib für diese Seite ein leeres Array zurück.
-   Wenn alles Trash ist: {"pro": [], "contra": []}.
 
 Gib NUR gültiges JSON zurück, ohne Erklärungstext:
 
