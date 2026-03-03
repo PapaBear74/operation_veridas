@@ -53,12 +53,12 @@ export async function runDailySummarization(dateStr = null, topicId = null) {
       const proArgs = args.filter((a) => a.side === "pro").map((a) => a.text);
       const contraArgs = args.filter((a) => a.side === "contra").map((a) => a.text);
 
-      const maxProPoints = proArgs.length;
-      const maxContraPoints = contraArgs.length;
+      const maxPro = Math.min(5, Math.max(proArgs.length, 1));
+      const maxContra = Math.min(5, Math.max(contraArgs.length, 1));
 
       const prompt = `Du bekommst Pro- und Contra-Argumente zu einem Thema.
 
-Thema: "${topic.title}" (Datum ${dateOnly})
+Thema: "${topic.title}"
 
 Pro-Argumente (vom Board):
 ${proArgs.length ? proArgs.map((t, i) => `${i + 1}. ${t}`).join("\n") : "(keine)"}
@@ -66,32 +66,20 @@ ${proArgs.length ? proArgs.map((t, i) => `${i + 1}. ${t}`).join("\n") : "(keine)
 Contra-Argumente (vom Board):
 ${contraArgs.length ? contraArgs.map((t, i) => `${i + 1}. ${t}`).join("\n") : "(keine)"}
 
-Deine Aufgabe ist AUSSCHLIESSLICH, diese vorhandenen Argumente zu KOMPRIMIEREN:
+Deine Aufgabe:
+1. KOMPRIMIERE die vorhandenen Argumente. Verwende NUR Informationen aus den obigen Texten.
+   Erfinde KEINE neuen Inhalte, Beispiele, Fakten oder Szenarien.
+2. Wenn ein einzelnes Argument mehrere verschiedene Punkte enthält, TEILE es in separate Argumente auf.
+3. Fasse sehr ähnliche oder doppelte Argumente zu einem zusammen.
+4. Entferne Beleidigungen, persönliche Daten, Off-Topic-Kommentare und irrelevante Teile.
+5. Maximal ${maxPro} Pro-Punkte und maximal ${maxContra} Contra-Punkte.
+6. Jeder Punkt soll wie ein einzelnes, kurzes Argument klingen (max. 1–2 Sätze).
 
-Regeln:
-1. Du darfst KEINE neuen Inhalte, Beispiele oder Fakten hinzufügen. Verwende NUR Informationen,
-   die in den obigen Pro- und Contra-Texten vorkommen.
-2. Du darfst mehrere sehr ähnliche Argumente zu einem zusammenfassen.
-3. Du darfst irrelevante, abschweifende oder offensichtlich unnötige Teile weglassen
-   (z.B. Beleidigungen, persönliche Details, Off-Topic-Kommentare).
-4. Du darfst NIE mehr Argumente erzeugen, als es ursprünglich gab:
-   - Maximal ${maxProPoints} Pro-Punkte,
-   - maximal ${maxContraPoints} Contra-Punkte.
-5. Wenn es nur 1 Pro-Argument gibt, darfst du auch nur 1 komprimierten Pro-Punkt zurückgeben, usw.
-6. Jeder Punkt soll wie ein einzelnes, kurzes Argument klingen (max. 1–2 Sätze),
-   so als hätte eine Person genau dieses Argument auf einem Board gepostet.
-7. Erfinde KEINE neuen Argumente, Gründe oder Szenarien.
-
-Gib NUR gültiges JSON zurück, ohne Erklärungstext, exakt in diesem Format:
+Gib NUR gültiges JSON zurück, ohne Erklärungstext:
 
 {
-  "pro": [
-    "komprimiertes Pro-Argument 1",
-    "komprimiertes Pro-Argument 2"
-  ],
-  "contra": [
-    "komprimiertes Contra-Argument 1"
-  ]
+  "pro": ["Argument 1", "Argument 2"],
+  "contra": ["Argument 1"]
 }`;
 
       try {
@@ -113,10 +101,10 @@ Gib NUR gültiges JSON zurück, ohne Erklärungstext, exakt in diesem Format:
         }
 
         const safePro = Array.isArray(parsed.pro)
-          ? parsed.pro.slice(0, maxProPoints).map((t) => String(t).trim()).filter(Boolean)
+          ? parsed.pro.slice(0, maxPro).map((t) => String(t).trim()).filter(Boolean)
           : [];
         const safeContra = Array.isArray(parsed.contra)
-          ? parsed.contra.slice(0, maxContraPoints).map((t) => String(t).trim()).filter(Boolean)
+          ? parsed.contra.slice(0, maxContra).map((t) => String(t).trim()).filter(Boolean)
           : [];
 
         if (!safePro.length && !safeContra.length) {

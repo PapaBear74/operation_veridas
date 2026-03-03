@@ -27,15 +27,11 @@
           No topics yet. Create one below.
         </div>
 
-        <div id="summariesSection" class="summariesSection" style="display:none">
-          <div class="summariesHeader">
-            <h3 class="summariesTitle">Daily AI Summaries</h3>
-            <div id="summariesLoading" class="spinner" aria-hidden="true" style="display:none"></div>
-          </div>
-          <div id="summariesList" class="summariesList"></div>
-        </div>
-
         <div id="board" class="board" aria-label="Arguments list">
+          <div id="boardLoading" class="boardLoading" style="display:none">
+            <div class="spinner"></div>
+            <span class="boardLoadingText">AI compresses arguments…</span>
+          </div>
           <div class="boardCols" aria-label="Pro and Contra columns">
             <div class="boardCol">
               <div class="boardColHeader">

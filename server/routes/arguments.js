@@ -43,58 +43,11 @@ router.post("/", async (req, res) => {
     );
     const a = rows[0];
 
-    // #region agent log
-    fetch("http://127.0.0.1:7386/ingest/9ee2d35a-b0cd-4d2c-9ab2-0c3f7ad89152", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Debug-Session-Id": "711679",
-      },
-      body: JSON.stringify({
-        sessionId: "711679",
-        runId: "pre-fix-1",
-        hypothesisId: "H1",
-        location: "server/routes/arguments.js:48",
-        message: "New argument inserted, triggering summarization",
-        data: {
-          topicId,
-          argumentId: a.id,
-          side: a.side,
-        },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion agent log
-
-    // Recompute today's summary for this topic synchronously so the client
-    // sees the updated summary immediately after the request completes.
     const todayStr = new Date().toISOString().slice(0, 10);
     try {
       await runDailySummarization(todayStr, topicId);
     } catch (err) {
-      console.error("Failed to update daily summary after new argument:", err);
-
-      // #region agent log
-      fetch("http://127.0.0.1:7386/ingest/9ee2d35a-b0cd-4d2c-9ab2-0c3f7ad89152", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Debug-Session-Id": "711679",
-        },
-        body: JSON.stringify({
-          sessionId: "711679",
-          runId: "pre-fix-1",
-          hypothesisId: "H4",
-          location: "server/routes/arguments.js:70",
-          message: "runDailySummarization threw error",
-          data: {
-            topicId,
-            errorMessage: err.message,
-          },
-          timestamp: Date.now(),
-        }),
-      }).catch(() => {});
-      // #endregion agent log
+      console.error("Failed to update summary after new argument:", err);
     }
 
     res.status(201).json({

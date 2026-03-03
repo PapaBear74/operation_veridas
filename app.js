@@ -10,9 +10,7 @@
   const contraList = document.getElementById("contraList");
   const emptyState = document.getElementById("emptyState");
   const toast = document.getElementById("toast");
-  const summariesSection = document.getElementById("summariesSection");
-  const summariesList = document.getElementById("summariesList");
-  const summariesLoading = document.getElementById("summariesLoading");
+  const boardLoading = document.getElementById("boardLoading");
 
   /** @typedef {"pro" | "contra"} Side */
   /** @typedef {{id:string, side:Side, text:string, createdAt:number}} Argument */
@@ -195,65 +193,10 @@
     contraList.appendChild(contraFrag);
   }
 
-  function renderSummaries() {
-    if (!summariesList || !summariesSection) return;
-
-    if (summaries.length === 0) {
-      summariesSection.style.display = "none";
-      return;
+  function showBoardLoading(visible) {
+    if (boardLoading) {
+      boardLoading.style.display = visible ? "flex" : "none";
     }
-
-    summariesSection.style.display = "block";
-    summariesList.innerHTML = "";
-
-    const frag = document.createDocumentFragment();
-    for (const s of summaries) {
-      const card = document.createElement("div");
-      card.className = "summaryCard noteCard";
-      const dateEl = document.createElement("div");
-      dateEl.className = "summaryDate muted";
-      dateEl.textContent = formatDateShort(s.summaryDate);
-      const textEl = document.createElement("p");
-      textEl.className = "noteBody summaryText";
-
-      // Wenn summaryText JSON ist (komprimierte Argumente), hübsch formatieren
-      let displayText = s.summaryText;
-      try {
-        const parsed = JSON.parse(s.summaryText);
-        const lines = [];
-        const pro = Array.isArray(parsed.pro) ? parsed.pro : [];
-        const contra = Array.isArray(parsed.contra) ? parsed.contra : [];
-
-        if (pro.length) {
-          lines.push("Pro:");
-          for (const p of pro) {
-            const t = String(p).trim();
-            if (t) lines.push(`- ${t}`);
-          }
-        }
-
-        if (contra.length) {
-          if (lines.length) lines.push(""); // Leerzeile
-          lines.push("Contra:");
-          for (const c of contra) {
-            const t = String(c).trim();
-            if (t) lines.push(`- ${t}`);
-          }
-        }
-
-        if (lines.length) {
-          displayText = lines.join("\n");
-        }
-      } catch {
-        // kein JSON, dann nutzen wir den Rohtext
-      }
-
-      textEl.textContent = displayText;
-      card.appendChild(dateEl);
-      card.appendChild(textEl);
-      frag.appendChild(card);
-    }
-    summariesList.appendChild(frag);
   }
 
   function render() {
@@ -266,7 +209,6 @@
     opinionForm.querySelector('button[type="submit"]').disabled = !hasTopic;
 
     renderBoard(selectedTopic);
-    renderSummaries();
 
     if (!topics.length) {
       emptyState.textContent = "No topics yet. Create one below.";
@@ -309,9 +251,7 @@
 
     const safeSide = side === "contra" ? "contra" : "pro";
 
-    if (summariesLoading) {
-      summariesLoading.style.display = "inline-block";
-    }
+    showBoardLoading(true);
 
     try {
       await api(`/api/topics/${topicId}/arguments`, {
@@ -326,9 +266,7 @@
       showToast("Failed to post argument");
       console.error(err);
     } finally {
-      if (summariesLoading) {
-        summariesLoading.style.display = "none";
-      }
+      showBoardLoading(false);
     }
   }
 
