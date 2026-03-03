@@ -350,6 +350,19 @@ kbd {
   margin-bottom: 12px;
 }
 
+.topicSelectField select {
+  white-space: normal;
+  min-height: 44px;
+}
+
+@media (max-width: 600px) {
+  .topicSelectField select {
+    font-size: 16px;
+    padding: 12px 14px;
+    min-height: 50px;
+  }
+}
+
 .topicSelectField .fieldLabel {
   font-size: 12px;
   color: var(--muted);
