@@ -1,107 +1,95 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>LETTERWARS Board</title>
-    <meta
-      name="description"
-      content="Create topics and post pro/contra arguments. Daily AI summaries."
-    />
-    <link rel="stylesheet" href="./styles.css" />
-  </head>
-  <body>
-    <div class="app">
-      <header class="header">
-        <h1>LETTERWARS Board</h1>
-        <p class="subtitle">Debate with your pro or contra arguments. Request new topics.</p>
-      </header>
 
-      <main class="content">
-        <section class="notes" aria-label="Arguments board">
-          <div class="topicSelectField">
-            <label class="fieldLabel" for="topicSelect">Topic</label>
-            <select id="topicSelect" aria-label="Select a topic"></select>
-          </div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LETTERWARS Board</title>
+  <meta name="description" content="Create topics and post pro/contra arguments. Daily AI summaries." />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
 
-          <div id="emptyState" class="emptyState" role="status" aria-live="polite">
-            No topics yet. Create one below.
-          </div>
+<body>
+  <div class="app">
+    <header class="header">
+      <h1>LETTERWARS Board</h1>
+      <p class="subtitle">Arguments are summarized by AI.</p>
+    </header>
 
-          <div id="summariesSection" class="summariesSection" style="display:none">
-            <h3 class="summariesTitle">Daily AI Summaries</h3>
-            <div id="summariesList" class="summariesList"></div>
-          </div>
-
-          <div id="board" class="board" aria-label="Arguments list">
-            <div class="boardCols" aria-label="Pro and Contra columns">
-              <div class="boardCol">
-                <div class="boardColHeader">
-                  <span class="pill pillPro">Pro</span>
-                </div>
-                <ol id="proList" class="notesList" aria-label="Pro arguments"></ol>
-              </div>
-              <div class="boardCol">
-                <div class="boardColHeader">
-                  <span class="pill pillContra">Contra</span>
-                </div>
-                <ol id="contraList" class="notesList" aria-label="Contra arguments"></ol>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section class="composer" aria-label="Write an argument">
-          <form id="opinionForm" class="composerForm" autocomplete="off">
-            <fieldset class="field">
-              <legend class="fieldLabel">Choose your side</legend>
-              <div class="segmented" role="radiogroup" aria-label="Choose Pro or Contra">
-                <label class="segmentedOption">
-                  <input type="radio" name="side" value="pro" checked />
-                  <span class="segmentedPill segmentedPillPro">Pro</span>
-                </label>
-                <label class="segmentedOption">
-                  <input type="radio" name="side" value="contra" />
-                  <span class="segmentedPill segmentedPillContra">Contra</span>
-                </label>
-              </div>
-            </fieldset>
-
-            <label class="field">
-              <span class="fieldLabel">Argument</span>
-              <textarea
-                id="argumentInput"
-                name="argument"
-                rows="6"
-                maxlength="5000"
-                placeholder="Write your argument…"
-                required
-              ></textarea>
-            </label>
-
-            <div class="composerRow">
-              <button class="btn btnPrimary" type="submit">Send</button>
-            </div>
-          </form>
-        </section>
-      </main>
-
-      <footer class="createTopicSection">
-        <div class="createTopicRow">
-          <input
-            id="newTopicInput"
-            name="newTopic"
-            type="text"
-            maxlength="80"
-            placeholder="Create a new topic…"
-          />
-          <button id="createTopicBtn" class="btn btnPrimary" type="button">Create</button>
+    <main class="content">
+      <section class="notes" aria-label="Arguments board">
+        <div class="topicSelectField">
+          <label class="fieldLabel" for="topicSelect">Topic</label>
+          <select id="topicSelect" aria-label="Select a topic"></select>
         </div>
-      </footer>
-    </div>
 
-    <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+        <div id="emptyState" class="emptyState" role="status" aria-live="polite">
+          No topics yet. Create one below.
+        </div>
 
-    <script src="./app.js" defer></script>
-  </body>
+        <div id="summariesSection" class="summariesSection" style="display:none">
+          <h3 class="summariesTitle">Daily AI Summaries</h3>
+          <div id="summariesList" class="summariesList"></div>
+        </div>
+
+        <div id="board" class="board" aria-label="Arguments list">
+          <div class="boardCols" aria-label="Pro and Contra columns">
+            <div class="boardCol">
+              <div class="boardColHeader">
+                <span class="pill pillPro">Pro</span>
+              </div>
+              <ol id="proList" class="notesList" aria-label="Pro arguments"></ol>
+            </div>
+            <div class="boardCol">
+              <div class="boardColHeader">
+                <span class="pill pillContra">Contra</span>
+              </div>
+              <ol id="contraList" class="notesList" aria-label="Contra arguments"></ol>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="composer" aria-label="Write an argument">
+        <form id="opinionForm" class="composerForm" autocomplete="off">
+          <fieldset class="field">
+            <legend class="fieldLabel">Choose your side</legend>
+            <div class="segmented" role="radiogroup" aria-label="Choose Pro or Contra">
+              <label class="segmentedOption">
+                <input type="radio" name="side" value="pro" checked />
+                <span class="segmentedPill segmentedPillPro">Pro</span>
+              </label>
+              <label class="segmentedOption">
+                <input type="radio" name="side" value="contra" />
+                <span class="segmentedPill segmentedPillContra">Contra</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <label class="field">
+            <span class="fieldLabel">Argument</span>
+            <textarea id="argumentInput" name="argument" rows="6" maxlength="5000" placeholder="Write your argument…"
+              required></textarea>
+          </label>
+
+          <div class="composerRow">
+            <button class="btn btnPrimary" type="submit">Send</button>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <footer class="createTopicSection">
+      <div class="createTopicRow">
+        <input id="newTopicInput" name="newTopic" type="text" maxlength="80" placeholder="Create a new topic…" />
+        <button id="createTopicBtn" class="btn btnPrimary" type="button">Create</button>
+      </div>
+    </footer>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="./app.js" defer></script>
+</body>
+
 </html>

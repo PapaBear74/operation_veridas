@@ -12,6 +12,24 @@ const openai = process.env.OPENAI_API_KEY
  */
 export async function runDailySummarization(dateStr = null, topicId = null) {
   if (!openai) {
+    // #region agent log
+    fetch("http://127.0.0.1:7386/ingest/9ee2d35a-b0cd-4d2c-9ab2-0c3f7ad89152", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Debug-Session-Id": "711679",
+      },
+      body: JSON.stringify({
+        sessionId: "711679",
+        runId: "pre-fix-1",
+        hypothesisId: "H2",
+        location: "server/jobs/summarize.js:16",
+        message: "runDailySummarization called without OpenAI client",
+        data: { dateStr, topicId, hasApiKey: Boolean(process.env.OPENAI_API_KEY) },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion agent log
     console.warn("OPENAI_API_KEY not set – skipping summarization");
     return;
   }
@@ -26,6 +44,25 @@ export async function runDailySummarization(dateStr = null, topicId = null) {
 
   const client = await pool.connect();
   try {
+    // #region agent log
+    fetch("http://127.0.0.1:7386/ingest/9ee2d35a-b0cd-4d2c-9ab2-0c3f7ad89152", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Debug-Session-Id": "711679",
+      },
+      body: JSON.stringify({
+        sessionId: "711679",
+        runId: "pre-fix-1",
+        hypothesisId: "H1",
+        location: "server/jobs/summarize.js:30",
+        message: "runDailySummarization start",
+        data: { dateOnly, nextDayStr, topicId },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion agent log
+
     let topics;
     if (topicId) {
       const { rows } = await client.query(
@@ -53,6 +90,29 @@ export async function runDailySummarization(dateStr = null, topicId = null) {
       const proArgs = args.filter((a) => a.side === "pro").map((a) => a.text);
       const contraArgs = args.filter((a) => a.side === "contra").map((a) => a.text);
 
+      // #region agent log
+      fetch("http://127.0.0.1:7386/ingest/9ee2d35a-b0cd-4d2c-9ab2-0c3f7ad89152", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Debug-Session-Id": "711679",
+        },
+        body: JSON.stringify({
+          sessionId: "711679",
+          runId: "pre-fix-1",
+          hypothesisId: "H3",
+          location: "server/jobs/summarize.js:55",
+          message: "Topic args fetched for summarization",
+          data: {
+            topicId: topic.id,
+            proCount: proArgs.length,
+            contraCount: contraArgs.length,
+          },
+          timestamp: Date.now(),
+        }),
+      }).catch(() => {});
+      // #endregion agent log
+
       const prompt = `Fasse die folgenden Argumente zum Thema "${topic.title}" vom ${dateOnly} zusammen.
 
 Pro-Argumente:
@@ -61,17 +121,27 @@ ${proArgs.map((t) => `- ${t}`).join("\n")}
 Contra-Argumente:
 ${contraArgs.map((t) => `- ${t}`).join("\n")}
 
-Gruppiere ähnliche Punkte und formuliere daraus maximal 5 aussagekräftige Pro-Argumente
-und maximal 5 aussagekräftige Contra-Argumente. Schreibe klar und sachlich auf Deutsch.
-Nutze wenn möglich dieses Format:
+Deine Aufgabe:
+- Gruppiere ähnliche Punkte.
+- Formuliere daraus maximal 5 eigenständige Pro-Argumente und maximal 5 eigenständige Contra-Argumente.
+- Jedes Argument soll so klingen, als hätte eine andere Person es als einzelnen Beitrag geschrieben
+  (also wie ein eigener kurzer Standpunkt, kein Fließtext, keine Ich-Form).
+- Ignoriere Inhalte, die nicht wirklich zum Thema gehören oder nur Randbemerkungen sind.
+- Bleibe inhaltlich möglichst nah an den eingereichten Argumenten.
+
+Gib NUR folgenden Aufbau zurück:
 
 Pro:
-1. ...
-2. ...
+1. [erstes komprimiertes Pro-Argument, 1–2 Sätze]
+2. [zweites komprimiertes Pro-Argument]
+3. ...
+(maximal 5 Punkte, ggf. weniger)
 
 Contra:
-1. ...
-2. ...`;
+1. [erstes komprimiertes Contra-Argument, 1–2 Sätze]
+2. [zweites komprimiertes Contra-Argument]
+3. ...
+(maximal 5 Punkte, ggf. weniger)`;
 
       try {
         const completion = await openai.chat.completions.create({
@@ -89,9 +159,55 @@ Contra:
             [topic.id, dateOnly, summaryText]
           );
           console.log(`Summarized topic "${topic.title}" for ${dateOnly}`);
+
+          // #region agent log
+          fetch("http://127.0.0.1:7386/ingest/9ee2d35a-b0cd-4d2c-9ab2-0c3f7ad89152", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Debug-Session-Id": "711679",
+            },
+            body: JSON.stringify({
+              sessionId: "711679",
+              runId: "pre-fix-1",
+              hypothesisId: "H1",
+              location: "server/jobs/summarize.js:88",
+              message: "Summary stored for topic",
+              data: {
+                topicId: topic.id,
+                dateOnly,
+                hasSummaryText: Boolean(summaryText),
+                summaryPreview: summaryText.slice(0, 120),
+              },
+              timestamp: Date.now(),
+            }),
+          }).catch(() => {});
+          // #endregion agent log
         }
       } catch (aiErr) {
         console.error(`AI summarization failed for topic ${topic.id}:`, aiErr.message);
+
+        // #region agent log
+        fetch("http://127.0.0.1:7386/ingest/9ee2d35a-b0cd-4d2c-9ab2-0c3f7ad89152", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Debug-Session-Id": "711679",
+          },
+          body: JSON.stringify({
+            sessionId: "711679",
+            runId: "pre-fix-1",
+            hypothesisId: "H4",
+            location: "server/jobs/summarize.js:99",
+            message: "AI summarization failed",
+            data: {
+              topicId: topic.id,
+              errorMessage: aiErr.message,
+            },
+            timestamp: Date.now(),
+          }),
+        }).catch(() => {});
+        // #endregion agent log
       }
     }
   } finally {
