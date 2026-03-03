@@ -84,7 +84,7 @@ Gib NUR gültiges JSON zurück, ohne Erklärungstext:
 
       try {
         const completion = await openai.chat.completions.create({
-          model: "gpt-4o-mini",
+          model: "gpt-4.1-mini",
           temperature: 0,
           messages: [{ role: "user", content: prompt }],
           max_tokens: 600,
