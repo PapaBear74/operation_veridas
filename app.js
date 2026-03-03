@@ -139,10 +139,56 @@
     const proFrag = document.createDocumentFragment();
     const contraFrag = document.createDocumentFragment();
 
-    for (const arg of arguments_) {
-      const card = renderArgumentCard(selectedTopic.id, arg);
-      if (arg.side === "contra") contraFrag.appendChild(card);
-      else proFrag.appendChild(card);
+    // Versuche zuerst, komprimierte Argumente aus der neuesten Summary zu verwenden
+    let usedCompressed = false;
+    if (summaries.length > 0) {
+      const latest = summaries[0];
+      try {
+        const parsed = JSON.parse(latest.summaryText);
+        const proCompressed = Array.isArray(parsed.pro) ? parsed.pro : [];
+        const contraCompressed = Array.isArray(parsed.contra) ? parsed.contra : [];
+
+        if (proCompressed.length || contraCompressed.length) {
+          for (let i = 0; i < proCompressed.length; i++) {
+            const text = String(proCompressed[i]).trim();
+            if (!text) continue;
+            const arg = {
+              id: `summary-pro-${i}`,
+              side: "pro",
+              text,
+              createdAt: Date.now(),
+            };
+            const card = renderArgumentCard(selectedTopic.id, arg);
+            proFrag.appendChild(card);
+          }
+
+          for (let i = 0; i < contraCompressed.length; i++) {
+            const text = String(contraCompressed[i]).trim();
+            if (!text) continue;
+            const arg = {
+              id: `summary-contra-${i}`,
+              side: "contra",
+              text,
+              createdAt: Date.now(),
+            };
+            const card = renderArgumentCard(selectedTopic.id, arg);
+            contraFrag.appendChild(card);
+          }
+
+          usedCompressed = true;
+        }
+      } catch {
+        // summaryText war kein JSON – dann fallen wir unten auf die Original-Argumente zurück
+      }
+    }
+
+    // Fallback: normale, nicht komprimierte Argumente anzeigen
+    if (!usedCompressed) {
+      for (const arg of arguments_) {
+        const card = renderArgumentCard(selectedTopic.id, arg);
+        if (arg.side === "contra") contraFrag.appendChild(card);
+        else proFrag.appendChild(card);
+      }
     }
 
     proList.appendChild(proFrag);
@@ -169,7 +215,40 @@
       dateEl.textContent = formatDateShort(s.summaryDate);
       const textEl = document.createElement("p");
       textEl.className = "noteBody summaryText";
-      textEl.textContent = s.summaryText;
+
+      // Wenn summaryText JSON ist (komprimierte Argumente), hübsch formatieren
+      let displayText = s.summaryText;
+      try {
+        const parsed = JSON.parse(s.summaryText);
+        const lines = [];
+        const pro = Array.isArray(parsed.pro) ? parsed.pro : [];
+        const contra = Array.isArray(parsed.contra) ? parsed.contra : [];
+
+        if (pro.length) {
+          lines.push("Pro:");
+          for (const p of pro) {
+            const t = String(p).trim();
+            if (t) lines.push(`- ${t}`);
+          }
+        }
+
+        if (contra.length) {
+          if (lines.length) lines.push(""); // Leerzeile
+          lines.push("Contra:");
+          for (const c of contra) {
+            const t = String(c).trim();
+            if (t) lines.push(`- ${t}`);
+          }
+        }
+
+        if (lines.length) {
+          displayText = lines.join("\n");
+        }
+      } catch {
+        // kein JSON, dann nutzen wir den Rohtext
+      }
+
+      textEl.textContent = displayText;
       card.appendChild(dateEl);
       card.appendChild(textEl);
       frag.appendChild(card);
