@@ -7,9 +7,10 @@ const openai = process.env.OPENAI_API_KEY
 
 /**
  * Summarizes arguments from a given date for each topic.
- * Call with dateStr as YYYY-MM-DD (default: yesterday).
+ * - dateStr: YYYY-MM-DD (default: yesterday, for the daily cron job)
+ * - topicId: optional, if provided only this topic is summarized
  */
-export async function runDailySummarization(dateStr = null) {
+export async function runDailySummarization(dateStr = null, topicId = null) {
   if (!openai) {
     console.warn("OPENAI_API_KEY not set – skipping summarization");
     return;
@@ -25,9 +26,19 @@ export async function runDailySummarization(dateStr = null) {
 
   const client = await pool.connect();
   try {
-    const { rows: topics } = await client.query(
-      `SELECT id, title FROM topics ORDER BY created_at ASC`
-    );
+    let topics;
+    if (topicId) {
+      const { rows } = await client.query(
+        `SELECT id, title FROM topics WHERE id = $1`,
+        [topicId]
+      );
+      topics = rows;
+    } else {
+      const { rows } = await client.query(
+        `SELECT id, title FROM topics ORDER BY created_at ASC`
+      );
+      topics = rows;
+    }
 
     for (const topic of topics) {
       const { rows: args } = await client.query(
@@ -50,7 +61,17 @@ ${proArgs.map((t) => `- ${t}`).join("\n")}
 Contra-Argumente:
 ${contraArgs.map((t) => `- ${t}`).join("\n")}
 
-Erstelle eine kurze, sachliche Zusammenfassung (2–4 Sätze) auf Deutsch, die die wichtigsten Pro- und Contra-Punkte hervorhebt.`;
+Gruppiere ähnliche Punkte und formuliere daraus maximal 5 aussagekräftige Pro-Argumente
+und maximal 5 aussagekräftige Contra-Argumente. Schreibe klar und sachlich auf Deutsch.
+Nutze wenn möglich dieses Format:
+
+Pro:
+1. ...
+2. ...
+
+Contra:
+1. ...
+2. ...`;
 
       try {
         const completion = await openai.chat.completions.create({

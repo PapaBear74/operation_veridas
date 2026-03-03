@@ -1,0 +1,9 @@
+node_modules
+dist
+build
+.DS_Store
+
+# Env files (never commit secrets)
+.env
+server/.env
+

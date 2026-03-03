@@ -1,5 +1,6 @@
 import { Router } from "express";
 import pool from "../db/pool.js";
+import { runDailySummarization } from "../jobs/summarize.js";
 
 const router = Router({ mergeParams: true });
 
@@ -41,6 +42,13 @@ router.post("/", async (req, res) => {
       [topicId, safeSide, trimmed]
     );
     const a = rows[0];
+
+    // Recompute today's summary for this topic after a new argument is added
+    const todayStr = new Date().toISOString().slice(0, 10);
+    runDailySummarization(todayStr, topicId).catch((err) => {
+      console.error("Failed to update daily summary after new argument:", err);
+    });
+
     res.status(201).json({
       id: a.id,
       topicId: a.topic_id,

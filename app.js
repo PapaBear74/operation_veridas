@@ -234,6 +234,7 @@
       body: JSON.stringify({ side: safeSide, text: trimmed }),
     });
     await loadArguments(topicId);
+    await loadSummaries(topicId);
     render();
     showToast("Argument posted");
   }
