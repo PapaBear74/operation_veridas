@@ -91,10 +91,11 @@ Gib NUR gültiges JSON zurück, ohne Erklärungstext:
         });
 
         const raw = completion.choices[0]?.message?.content?.trim() ?? "";
+        const cleaned = raw.replace(/^```(?:json)?\s*\n?/i, "").replace(/\n?```\s*$/i, "");
         let parsed;
 
         try {
-          parsed = JSON.parse(raw);
+          parsed = JSON.parse(cleaned);
         } catch {
           console.error("Failed to parse AI summary JSON for topic", topic.id, raw);
           continue;
