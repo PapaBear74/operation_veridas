@@ -146,8 +146,7 @@
         const proCompressed = Array.isArray(parsed.pro) ? parsed.pro : [];
         const contraCompressed = Array.isArray(parsed.contra) ? parsed.contra : [];
 
-        if (proCompressed.length || contraCompressed.length) {
-          for (let i = 0; i < proCompressed.length; i++) {
+        for (let i = 0; i < proCompressed.length; i++) {
             const text = String(proCompressed[i]).trim();
             if (!text) continue;
             const arg = {
@@ -174,7 +173,6 @@
           }
 
           usedCompressed = true;
-        }
       } catch {
         // summaryText war kein JSON – dann fallen wir unten auf die Original-Argumente zurück
       }

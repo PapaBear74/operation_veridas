@@ -116,10 +116,6 @@ Gib NUR gültiges JSON zurück, ohne Erklärungstext:
           ? parsed.contra.slice(0, maxContra).map((t) => String(t).trim()).filter(Boolean)
           : [];
 
-        if (!safePro.length && !safeContra.length) {
-          continue;
-        }
-
         const summaryPayload = JSON.stringify({
           pro: safePro,
           contra: safeContra,
