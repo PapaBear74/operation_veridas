@@ -352,14 +352,15 @@ kbd {
 
 .topicSelectField select {
   white-space: normal;
-  min-height: 44px;
+  min-height: 50px;
+  font-size: 16px;
+  padding: 12px 14px;
 }
 
-@media (max-width: 600px) {
+@media (min-width: 601px) {
   .topicSelectField select {
-    font-size: 16px;
-    padding: 12px 14px;
-    min-height: 50px;
+    font-size: 15px;
+    padding: 10px 14px;
   }
 }
 
