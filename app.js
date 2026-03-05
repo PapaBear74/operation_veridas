@@ -3,6 +3,7 @@
 
   const opinionForm = document.getElementById("opinionForm");
   const topicSelect = document.getElementById("topicSelect");
+  const topicSelectDisplay = document.getElementById("topicSelectDisplay");
   const newTopicInput = document.getElementById("newTopicInput");
   const createTopicBtn = document.getElementById("createTopicBtn");
   const argumentInput = document.getElementById("argumentInput");
@@ -90,11 +91,18 @@
     return found ?? topics[0];
   }
 
+  function renderTopicSelectDisplay() {
+    if (!topicSelectDisplay || !topicSelect) return;
+    const selectedOption = topicSelect.selectedOptions?.[0];
+    topicSelectDisplay.textContent = selectedOption?.textContent ?? "";
+  }
+
   function renderTopics(selectedTopic) {
     topicSelect.innerHTML = "";
 
     if (topics.length === 0) {
       topicSelect.disabled = true;
+      renderTopicSelectDisplay();
       return;
     }
 
@@ -111,6 +119,7 @@
 
     const idToSelect = selectedTopic?.id ?? topics[0].id;
     topicSelect.value = idToSelect;
+    renderTopicSelectDisplay();
   }
 
   function renderArgumentCard(topicId, arg) {

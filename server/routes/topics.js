@@ -21,6 +21,9 @@ router.post("/", async (req, res) => {
   if (!trimmed) {
     return res.status(400).json({ error: "Title is required" });
   }
+  if (trimmed.length > 150) {
+    return res.status(400).json({ error: "Title must be at most 150 characters" });
+  }
   try {
     const { rows } = await pool.query(
       `INSERT INTO topics (title, approved) VALUES ($1, false) RETURNING id, title, created_at`,

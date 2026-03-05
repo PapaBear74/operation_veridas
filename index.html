@@ -24,7 +24,10 @@
       <section class="notes" aria-label="Arguments board">
         <div class="topicSelectField">
           <label class="fieldLabel" for="topicSelect">Topic</label>
-          <select id="topicSelect" aria-label="Select a topic"></select>
+          <div class="topicSelectWrap">
+            <select id="topicSelect" aria-label="Select a topic"></select>
+            <div id="topicSelectDisplay" class="topicSelectDisplay" aria-hidden="true"></div>
+          </div>
         </div>
 
         <div id="emptyState" class="emptyState" role="status" aria-live="polite">
@@ -84,7 +87,7 @@
 
     <footer class="createTopicSection">
       <div class="createTopicRow">
-        <input id="newTopicInput" name="newTopic" type="text" maxlength="80" placeholder="Create a new topic…" />
+        <input id="newTopicInput" name="newTopic" type="text" maxlength="150" placeholder="Create a new topic…" />
         <button id="createTopicBtn" class="btn btnPrimary" type="button">Create</button>
       </div>
     </footer>

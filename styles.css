@@ -350,6 +350,10 @@ kbd {
   margin-bottom: 12px;
 }
 
+.topicSelectWrap {
+  position: relative;
+}
+
 .topicSelectField select {
   white-space: normal;
   min-height: 50px;
@@ -357,10 +361,58 @@ kbd {
   padding: 12px 14px;
 }
 
+.topicSelectDisplay {
+  display: none;
+}
+
 @media (min-width: 601px) {
-  .topicSelectField select {
+  .topicSelectWrap select {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    z-index: 2;
+    cursor: pointer;
+  }
+
+  .topicSelectDisplay {
+    display: block;
+    min-height: 50px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.12);
+    color: var(--text);
+    padding: 10px 40px 10px 14px;
     font-size: 15px;
-    padding: 10px 14px;
+    line-height: 1.25;
+    white-space: normal;
+    overflow-wrap: break-word;
+  }
+
+  .topicSelectWrap::after {
+    content: "⌄";
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    color: var(--muted);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .topicSelectWrap select:focus + .topicSelectDisplay {
+    border-color: rgba(124, 92, 255, 0.6);
+    box-shadow: 0 0 0 4px rgba(124, 92, 255, 0.16);
+  }
+
+  @media (prefers-color-scheme: light) {
+    .topicSelectDisplay {
+      background: rgba(255, 255, 255, 0.7);
+    }
+  }
+
+  .topicSelectField select {
+    min-height: 50px;
   }
 }
 
