@@ -82,12 +82,16 @@ Deine Aufgabe:
    gib leere Arrays zurück: {"pro": [], "contra": []}.
 4. Maximal ${maxPro} Pro-Punkte und maximal ${maxContra} Contra-Punkte.
 5. Jeder Punkt soll wie ein einzelnes, kurzes Argument klingen (max. 1–2 Sätze).
+6. Bewerte JEDES komprimierte Argument mit einem Plausibilitäts-Score von 0 bis 10 (nur ganze Zahlen).
+   Der Score basiert auf deinem Allgemeinwissen:
+   0 = sehr unplausibel / faktisch falsch, 10 = sehr plausibel / faktisch korrekt.
+   Bewerte sachlich und unabhängig davon, ob das Argument Pro oder Contra ist.
 
 Gib NUR gültiges JSON zurück, ohne Erklärungstext:
 
 {
-  "pro": ["Argument 1", "Argument 2"],
-  "contra": ["Argument 1"]
+  "pro": [{"text": "Argument 1", "plausibility": 8}, {"text": "Argument 2", "plausibility": 5}],
+  "contra": [{"text": "Argument 1", "plausibility": 7}]
 }`;
 
       try {
@@ -109,11 +113,21 @@ Gib NUR gültiges JSON zurück, ohne Erklärungstext:
           continue;
         }
 
+        const normalizeArg = (item) => {
+          if (typeof item === "string") return { text: item.trim(), plausibility: null };
+          if (item && typeof item === "object" && typeof item.text === "string") {
+            const p = Number(item.plausibility);
+            const score = Number.isInteger(p) && p >= 0 && p <= 10 ? p : null;
+            return { text: item.text.trim(), plausibility: score };
+          }
+          return null;
+        };
+
         const safePro = Array.isArray(parsed.pro)
-          ? parsed.pro.slice(0, maxPro).map((t) => String(t).trim()).filter(Boolean)
+          ? parsed.pro.slice(0, maxPro).map(normalizeArg).filter((a) => a && a.text)
           : [];
         const safeContra = Array.isArray(parsed.contra)
-          ? parsed.contra.slice(0, maxContra).map((t) => String(t).trim()).filter(Boolean)
+          ? parsed.contra.slice(0, maxContra).map(normalizeArg).filter((a) => a && a.text)
           : [];
 
         const summaryPayload = JSON.stringify({

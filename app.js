@@ -122,6 +122,12 @@
     renderTopicSelectDisplay();
   }
 
+  function getPlausibilityColor(score) {
+    if (score <= 3) return { bg: "rgba(255, 77, 109, 0.18)", border: "rgba(255, 77, 109, 0.5)", text: "rgba(255, 77, 109, 0.95)" };
+    if (score <= 6) return { bg: "rgba(255, 193, 59, 0.18)", border: "rgba(255, 193, 59, 0.5)", text: "rgba(255, 193, 59, 0.95)" };
+    return { bg: "rgba(51, 214, 159, 0.18)", border: "rgba(51, 214, 159, 0.5)", text: "rgba(51, 214, 159, 0.95)" };
+  }
+
   function renderArgumentCard(topicId, arg) {
     const li = document.createElement("li");
     li.className = "noteCard argumentCard";
@@ -129,10 +135,28 @@
     li.dataset.topicId = topicId;
     li.dataset.argumentId = arg.id;
 
+    const row = document.createElement("div");
+    row.className = "argumentRow";
+
     const body = document.createElement("p");
     body.className = "noteBody";
     body.textContent = arg.text;
-    li.appendChild(body);
+    row.appendChild(body);
+
+    if (arg.plausibility != null) {
+      const score = arg.plausibility;
+      const colors = getPlausibilityColor(score);
+      const badge = document.createElement("span");
+      badge.className = "plausibilityBadge";
+      badge.textContent = score;
+      badge.title = `Plausibilität: ${score}/10`;
+      badge.style.background = colors.bg;
+      badge.style.borderColor = colors.border;
+      badge.style.color = colors.text;
+      row.appendChild(badge);
+    }
+
+    li.appendChild(row);
 
     return li;
   }
@@ -156,12 +180,16 @@
         const contraCompressed = Array.isArray(parsed.contra) ? parsed.contra : [];
 
         for (let i = 0; i < proCompressed.length; i++) {
-            const text = String(proCompressed[i]).trim();
+            const item = proCompressed[i];
+            const text = (typeof item === "object" && item !== null ? String(item.text) : String(item)).trim();
             if (!text) continue;
+            const plausibility = typeof item === "object" && item !== null && item.plausibility != null
+              ? Number(item.plausibility) : null;
             const arg = {
               id: `summary-pro-${i}`,
               side: "pro",
               text,
+              plausibility: Number.isInteger(plausibility) ? plausibility : null,
               createdAt: Date.now(),
             };
             const card = renderArgumentCard(selectedTopic.id, arg);
@@ -169,12 +197,16 @@
           }
 
           for (let i = 0; i < contraCompressed.length; i++) {
-            const text = String(contraCompressed[i]).trim();
+            const item = contraCompressed[i];
+            const text = (typeof item === "object" && item !== null ? String(item.text) : String(item)).trim();
             if (!text) continue;
+            const plausibility = typeof item === "object" && item !== null && item.plausibility != null
+              ? Number(item.plausibility) : null;
             const arg = {
               id: `summary-contra-${i}`,
               side: "contra",
               text,
+              plausibility: Number.isInteger(plausibility) ? plausibility : null,
               createdAt: Date.now(),
             };
             const card = renderArgumentCard(selectedTopic.id, arg);
@@ -218,10 +250,10 @@
     renderBoard(selectedTopic);
 
     if (!topics.length) {
-      emptyState.textContent = "No topics yet. Create one below.";
+      emptyState.textContent = "No topics yet. Request one below.";
       setEmptyStateVisible(true);
     } else if (selectedTopic && arguments_.length === 0 && summaries.length === 0) {
-      emptyState.textContent = "No arguments yet. Write the first one on the right. Daily AI summaries appear here.";
+      emptyState.textContent = "No arguments yet.";
       setEmptyStateVisible(true);
     } else {
       setEmptyStateVisible(false);
