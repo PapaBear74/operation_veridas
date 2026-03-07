@@ -12,6 +12,26 @@
   const emptyState = document.getElementById("emptyState");
   const toast = document.getElementById("toast");
   const boardLoading = document.getElementById("boardLoading");
+  const board = document.getElementById("board");
+  const togglePlausibilityBtn = document.getElementById("togglePlausibility");
+
+  let showPlausibility = localStorage.getItem("showPlausibility") === "true";
+  if (showPlausibility) board.classList.add("show-plausibility");
+  syncPlausibilityBtn();
+
+  function syncPlausibilityBtn() {
+    togglePlausibilityBtn.setAttribute("aria-pressed", showPlausibility);
+    togglePlausibilityBtn.title = showPlausibility
+      ? "Hide plausibility scores"
+      : "Show plausibility scores";
+  }
+
+  togglePlausibilityBtn.addEventListener("click", () => {
+    showPlausibility = !showPlausibility;
+    board.classList.toggle("show-plausibility", showPlausibility);
+    localStorage.setItem("showPlausibility", showPlausibility);
+    syncPlausibilityBtn();
+  });
 
   /** @typedef {"pro" | "contra"} Side */
   /** @typedef {{id:string, side:Side, text:string, createdAt:number}} Argument */

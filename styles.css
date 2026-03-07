@@ -637,7 +637,7 @@ h2 {
 
 .plausibilityBadge {
   flex-shrink: 0;
-  display: inline-flex;
+  display: none;
   align-items: center;
   justify-content: center;
   width: 30px;
@@ -650,6 +650,47 @@ h2 {
   line-height: 1;
   cursor: default;
   user-select: none;
+}
+
+.show-plausibility .plausibilityBadge {
+  display: inline-flex;
+}
+
+.boardToolbar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.togglePlausibilityBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+.togglePlausibilityBtn .eyeIcon {
+  display: none;
+}
+
+.togglePlausibilityBtn .eyeOffIcon {
+  display: block;
+}
+
+.togglePlausibilityBtn[aria-pressed="true"] .eyeIcon {
+  display: block;
+}
+
+.togglePlausibilityBtn[aria-pressed="true"] .eyeOffIcon {
+  display: none;
+}
+
+.togglePlausibilityBtn[aria-pressed="true"] {
+  border-color: rgba(124, 92, 255, 0.45);
+  background: rgba(124, 92, 255, 0.14);
 }
 
 .noteBody {
