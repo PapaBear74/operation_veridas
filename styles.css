@@ -662,35 +662,19 @@ h2 {
 }
 
 .togglePlausibilityBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
   font-family: var(--mono);
   font-size: 11px;
   padding: 6px 10px;
   border-radius: 999px;
   transition: border-color 120ms ease, background 120ms ease;
-}
-
-.togglePlausibilityBtn .eyeIcon {
-  display: none;
-}
-
-.togglePlausibilityBtn .eyeOffIcon {
-  display: block;
-}
-
-.togglePlausibilityBtn[aria-pressed="true"] .eyeIcon {
-  display: block;
-}
-
-.togglePlausibilityBtn[aria-pressed="true"] .eyeOffIcon {
-  display: none;
+  text-decoration: line-through;
+  text-decoration-color: var(--muted);
 }
 
 .togglePlausibilityBtn[aria-pressed="true"] {
   border-color: rgba(124, 92, 255, 0.45);
   background: rgba(124, 92, 255, 0.14);
+  text-decoration: none;
 }
 
 .noteBody {
