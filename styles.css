@@ -670,8 +670,8 @@ h2 {
 }
 
 .togglePlausibilityBtn[aria-pressed="true"] {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(0, 0, 0, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
   color: var(--text);
 }
 
