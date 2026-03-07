@@ -666,14 +666,12 @@ h2 {
   font-size: 11px;
   padding: 6px 10px;
   border-radius: 999px;
-  transition: border-color 120ms ease, background 120ms ease, color 120ms ease;
-  color: var(--muted);
+  transition: border-color 120ms ease, background 120ms ease;
 }
 
 .togglePlausibilityBtn[aria-pressed="true"] {
-  border-color: rgba(124, 92, 255, 0.45);
-  background: rgba(124, 92, 255, 0.14);
-  color: rgba(124, 92, 255, 0.95);
+  border-color: rgba(96, 165, 250, 0.45);
+  background: rgba(96, 165, 250, 0.14);
 }
 
 .noteBody {
