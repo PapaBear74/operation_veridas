@@ -670,7 +670,9 @@ h2 {
 }
 
 .togglePlausibilityBtn[aria-pressed="true"] {
-  color: rgba(96, 165, 250, 0.95);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: var(--text);
 }
 
 .noteBody {
