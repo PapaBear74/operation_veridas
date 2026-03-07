@@ -29,6 +29,7 @@
   togglePlausibilityBtn.addEventListener("click", () => {
     showPlausibility = !showPlausibility;
     board.classList.toggle("show-plausibility", showPlausibility);
+    board.offsetHeight;
     localStorage.setItem("showPlausibility", showPlausibility);
     syncPlausibilityBtn();
   });

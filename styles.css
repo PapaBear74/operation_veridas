@@ -669,9 +669,9 @@ h2 {
   transition: border-color 120ms ease, background 120ms ease;
 }
 
-.togglePlausibilityBtn[aria-pressed="true"] {
-  background: rgba(0, 0, 0, 0.06);
-  border-color: rgba(255, 255, 255, 0.12);
+.togglePlausibilityBtn.iconBtn[aria-pressed="true"] {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
   color: var(--text);
 }
 
