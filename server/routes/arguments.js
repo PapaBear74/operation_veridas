@@ -1,12 +1,20 @@
 import { Router } from "express";
 import pool from "../db/pool.js";
 import { runDailySummarization } from "../jobs/summarize.js";
+import { canAccessTopic, getAuthContext } from "../lib/auth.js";
 
 const router = Router({ mergeParams: true });
 
 router.get("/", async (req, res) => {
   const { topicId } = req.params;
+  const auth = getAuthContext(req);
+  if (!auth.ok) {
+    return res.status(auth.status).json({ error: auth.error });
+  }
   try {
+    const allowed = await canAccessTopic(pool, topicId, auth);
+    if (!allowed) return res.status(403).json({ error: "Access denied" });
+
     const { rows } = await pool.query(
       `SELECT id, topic_id, side, text, created_at FROM arguments 
        WHERE topic_id = $1 ORDER BY created_at DESC`,
@@ -30,12 +38,20 @@ router.get("/", async (req, res) => {
 router.post("/", async (req, res) => {
   const { topicId } = req.params;
   const { side, text } = req.body;
+  const auth = getAuthContext(req);
+  if (!auth.ok) {
+    return res.status(auth.status).json({ error: auth.error });
+  }
+
   const trimmed = String(text ?? "").trim();
   const safeSide = side === "contra" ? "contra" : "pro";
   if (!trimmed) {
     return res.status(400).json({ error: "Text is required" });
   }
   try {
+    const allowed = await canAccessTopic(pool, topicId, auth);
+    if (!allowed) return res.status(403).json({ error: "Access denied" });
+
     const { rows } = await pool.query(
       `INSERT INTO arguments (topic_id, side, text) VALUES ($1, $2, $3) 
        RETURNING id, topic_id, side, text, created_at`,
@@ -68,6 +84,14 @@ router.post("/", async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
   const { topicId, id } = req.params;
+  const auth = getAuthContext(req);
+  if (!auth.ok) {
+    return res.status(auth.status).json({ error: auth.error });
+  }
+  if (!auth.isAdmin) {
+    return res.status(403).json({ error: "Only admin can delete arguments" });
+  }
+
   try {
     const { rowCount } = await pool.query(
       `DELETE FROM arguments WHERE id = $1 AND topic_id = $2`,

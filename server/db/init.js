@@ -15,10 +15,12 @@ CREATE TABLE IF NOT EXISTS topics (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   title TEXT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  approved BOOLEAN DEFAULT false
+  approved BOOLEAN DEFAULT false,
+  access_hash TEXT
 );
 
 ALTER TABLE topics ADD COLUMN IF NOT EXISTS approved BOOLEAN DEFAULT false;
+ALTER TABLE topics ADD COLUMN IF NOT EXISTS access_hash TEXT;
 
 CREATE TABLE IF NOT EXISTS arguments (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -40,6 +42,7 @@ CREATE TABLE IF NOT EXISTS daily_summaries (
 CREATE INDEX IF NOT EXISTS idx_arguments_topic_id ON arguments(topic_id);
 CREATE INDEX IF NOT EXISTS idx_arguments_created_at ON arguments(created_at);
 CREATE INDEX IF NOT EXISTS idx_daily_summaries_topic_date ON daily_summaries(topic_id, summary_date);
+CREATE INDEX IF NOT EXISTS idx_topics_access_hash ON topics(access_hash);
 `;
 
 async function init() {

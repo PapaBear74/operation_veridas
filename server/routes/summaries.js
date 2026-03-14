@@ -1,11 +1,19 @@
 import { Router } from "express";
 import pool from "../db/pool.js";
+import { canAccessTopic, getAuthContext } from "../lib/auth.js";
 
 const router = Router({ mergeParams: true });
 
 router.get("/", async (req, res) => {
   const { topicId } = req.params;
+  const auth = getAuthContext(req);
+  if (!auth.ok) {
+    return res.status(auth.status).json({ error: auth.error });
+  }
   try {
+    const allowed = await canAccessTopic(pool, topicId, auth);
+    if (!allowed) return res.status(403).json({ error: "Access denied" });
+
     const { rows } = await pool.query(
       `SELECT id, topic_id, summary_date, summary_text, created_at FROM daily_summaries 
        WHERE topic_id = $1 ORDER BY summary_date DESC`,

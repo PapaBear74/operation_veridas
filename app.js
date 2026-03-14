@@ -26,18 +26,43 @@
   let arguments_ = [];
   /** @type {Summary[]} */
   let summaries = [];
+  /** @type {string} */
+  let sessionPassword = "";
 
   async function api(path, options = {}) {
     const res = await fetch(API_BASE + path, {
       ...options,
-      headers: { "Content-Type": "application/json", ...options.headers },
+      headers: {
+        "Content-Type": "application/json",
+        ...(sessionPassword ? { "x-board-password": sessionPassword } : {}),
+        ...options.headers,
+      },
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || res.statusText);
+      const error = new Error(err.error || res.statusText);
+      error.status = res.status;
+      throw error;
     }
     if (res.status === 204) return null;
     return res.json();
+  }
+
+  function askForLoginPassword() {
+    while (true) {
+      const entered = window.prompt("Enter password to access topics:");
+      const trimmed = String(entered ?? "").trim();
+      if (trimmed) return trimmed;
+    }
+  }
+
+  function askForTopicPassword(defaultValue = "") {
+    const entered = window.prompt(
+      "Enter a password for this requested topic.\nThis password can be used for multiple topics.",
+      defaultValue
+    );
+    if (entered === null) return null;
+    return String(entered).trim();
   }
 
   async function loadTopics() {
@@ -234,13 +259,31 @@
       showToast("Topic title can't be empty");
       return;
     }
-    await api("/api/topics", { method: "POST", body: JSON.stringify({ title: trimmed }) });
-    await loadTopics();
-    selectedTopicId = topics[0]?.id ?? null;
-    await loadArguments(selectedTopicId);
-    await loadSummaries(selectedTopicId);
-    render();
-    showToast("Topic submitted. It will appear after approval.");
+    const topicPassword = askForTopicPassword(sessionPassword);
+    if (topicPassword === null) {
+      showToast("Topic request cancelled");
+      return;
+    }
+    if (!topicPassword) {
+      showToast("Topic password can't be empty");
+      return;
+    }
+
+    try {
+      await api("/api/topics", {
+        method: "POST",
+        body: JSON.stringify({ title: trimmed, password: topicPassword }),
+      });
+      await loadTopics();
+      selectedTopicId = topics[0]?.id ?? null;
+      await loadArguments(selectedTopicId);
+      await loadSummaries(selectedTopicId);
+      render();
+      showToast("Topic submitted. It will appear after approval.");
+    } catch (err) {
+      showToast(err.message || "Failed to create topic");
+      console.error(err);
+    }
   }
 
   async function addArgument(topicId, side, text) {
@@ -325,16 +368,25 @@
   });
 
   async function init() {
-    try {
-      await loadTopics();
-      if (selectedTopicId) {
-        await loadArguments(selectedTopicId);
-        await loadSummaries(selectedTopicId);
+    while (true) {
+      sessionPassword = askForLoginPassword();
+      try {
+        await loadTopics();
+        if (selectedTopicId) {
+          await loadArguments(selectedTopicId);
+          await loadSummaries(selectedTopicId);
+        }
+        render();
+        break;
+      } catch (err) {
+        if (err?.status === 401) {
+          showToast("Password required");
+          continue;
+        }
+        showToast(err.message || "Failed to load data. Is the server running?");
+        console.error(err);
+        break;
       }
-      render();
-    } catch (err) {
-      showToast("Failed to load data. Is the server running?");
-      console.error(err);
     }
   }
 

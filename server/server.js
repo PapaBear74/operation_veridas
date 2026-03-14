@@ -6,7 +6,7 @@ import { fileURLToPath } from "url";
 import topicsRouter from "./routes/topics.js";
 import argumentsRouter from "./routes/arguments.js";
 import summariesRouter from "./routes/summaries.js";
-import { runDailySummarization } from "./jobs/summarize.js";
+import { ensureSchema } from "./db/ensureSchema.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -28,6 +28,13 @@ app.get("*", (req, res) => {
   res.sendFile(path.join(publicPath, "index.html"));
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+ensureSchema()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("Schema check failed:", err);
+    process.exit(1);
+  });
