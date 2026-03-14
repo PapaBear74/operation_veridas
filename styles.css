@@ -103,8 +103,8 @@ body {
   gap: 16px;
   align-items: flex-start;
   justify-content: space-between;
-  padding: 8px 4px 20px;
-  border-bottom: 1px solid var(--border);
+  padding: 18px 18px 16px;
+  border: none;
 }
 
 h1 {
