@@ -218,10 +218,10 @@
     renderBoard(selectedTopic);
 
     if (!topics.length) {
-      emptyState.textContent = "No topics yet. Create one below.";
+      emptyState.textContent = "No topics yet. Request one below.";
       setEmptyStateVisible(true);
     } else if (selectedTopic && arguments_.length === 0 && summaries.length === 0) {
-      emptyState.textContent = "No arguments yet. Write the first one on the right. Daily AI summaries appear here.";
+      emptyState.textContent = "No arguments yet. Write the first one.";
       setEmptyStateVisible(true);
     } else {
       setEmptyStateVisible(false);
