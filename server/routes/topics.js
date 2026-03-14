@@ -25,6 +25,9 @@ router.get("/", async (req, res) => {
           ORDER BY created_at DESC`;
     const params = auth.isAdmin ? [] : [auth.passwordHash];
     const { rows } = await pool.query(query, params);
+    if (!auth.isAdmin && rows.length === 0) {
+      return res.status(403).json({ error: "No approved topics for this password" });
+    }
     res.json(rows.map((r) => ({ ...r, createdAt: r.created_at?.getTime?.() ?? r.created_at })));
   } catch (err) {
     console.error(err);

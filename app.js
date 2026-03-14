@@ -12,6 +12,11 @@
   const emptyState = document.getElementById("emptyState");
   const toast = document.getElementById("toast");
   const boardLoading = document.getElementById("boardLoading");
+  const loginOverlay = document.getElementById("loginOverlay");
+  const loginForm = document.getElementById("loginForm");
+  const loginPasswordInput = document.getElementById("loginPasswordInput");
+  const loginError = document.getElementById("loginError");
+  const loginSubmitBtn = document.getElementById("loginSubmitBtn");
 
   /** @typedef {"pro" | "contra"} Side */
   /** @typedef {{id:string, side:Side, text:string, createdAt:number}} Argument */
@@ -48,12 +53,27 @@
     return res.json();
   }
 
-  function askForLoginPassword() {
-    while (true) {
-      const entered = window.prompt("Enter password to access topics:");
-      const trimmed = String(entered ?? "").trim();
-      if (trimmed) return trimmed;
+  function setLoginVisible(visible) {
+    if (!loginOverlay) return;
+    loginOverlay.style.display = visible ? "flex" : "none";
+  }
+
+  function setLoginError(message) {
+    if (!loginError) return;
+    loginError.textContent = message ?? "";
+  }
+
+  async function loginWithPassword(password) {
+    sessionPassword = password;
+    await loadTopics();
+    if (selectedTopicId) {
+      await loadArguments(selectedTopicId);
+      await loadSummaries(selectedTopicId);
+    } else {
+      arguments_ = [];
+      summaries = [];
     }
+    render();
   }
 
   function askForTopicPassword(defaultValue = "") {
@@ -367,27 +387,41 @@
     }
   });
 
-  async function init() {
-    while (true) {
-      sessionPassword = askForLoginPassword();
-      try {
-        await loadTopics();
-        if (selectedTopicId) {
-          await loadArguments(selectedTopicId);
-          await loadSummaries(selectedTopicId);
-        }
-        render();
-        break;
-      } catch (err) {
-        if (err?.status === 401) {
-          showToast("Password required");
-          continue;
-        }
-        showToast(err.message || "Failed to load data. Is the server running?");
-        console.error(err);
-        break;
-      }
+  async function onLoginSubmit(e) {
+    e.preventDefault();
+    const password = String(loginPasswordInput?.value ?? "").trim();
+    if (!password) {
+      setLoginError("Password is required");
+      return;
     }
+
+    setLoginError("");
+    if (loginSubmitBtn) loginSubmitBtn.disabled = true;
+
+    try {
+      await loginWithPassword(password);
+      setLoginVisible(false);
+      if (loginPasswordInput) loginPasswordInput.value = "";
+    } catch (err) {
+      sessionPassword = "";
+      if (err?.status === 401 || err?.status === 403) {
+        setLoginError(err.message || "Password invalid or not approved");
+      } else {
+        setLoginError("Failed to load data. Is the server running?");
+      }
+      console.error(err);
+    } finally {
+      if (loginSubmitBtn) loginSubmitBtn.disabled = false;
+      loginPasswordInput?.focus();
+      loginPasswordInput?.select();
+    }
+  }
+
+  function init() {
+    setLoginVisible(true);
+    if (!loginForm) return;
+    loginForm.addEventListener("submit", onLoginSubmit);
+    loginPasswordInput?.focus();
   }
 
   init();

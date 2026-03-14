@@ -14,6 +14,19 @@
 </head>
 
 <body>
+  <div id="loginOverlay" class="loginOverlay" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+    <form id="loginForm" class="loginCard" autocomplete="off">
+      <h2 id="loginTitle">Enter Password</h2>
+      <p class="loginText">Enter your board password to view topics.</p>
+      <label class="field">
+        <span class="fieldLabel">Password</span>
+        <input id="loginPasswordInput" name="password" type="password" required />
+      </label>
+      <p id="loginError" class="loginError" role="status" aria-live="polite"></p>
+      <button id="loginSubmitBtn" class="btn btnPrimary" type="submit">Continue</button>
+    </form>
+  </div>
+
   <div class="app">
     <header class="header">
       <h1>LETTERWARS Board</h1>
