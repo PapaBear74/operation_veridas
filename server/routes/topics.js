@@ -8,6 +8,14 @@ import {
 
 const router = Router();
 
+router.get("/me", (req, res) => {
+  const auth = getAuthContext(req);
+  if (!auth.ok) {
+    return res.status(auth.status).json({ error: auth.error });
+  }
+  res.json({ isAdmin: auth.isAdmin });
+});
+
 router.get("/", async (req, res) => {
   const auth = getAuthContext(req);
   if (!auth.ok) {
@@ -85,6 +93,42 @@ router.post("/", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to create topic" });
+  }
+});
+
+router.patch("/:id/approval", async (req, res) => {
+  const auth = getAuthContext(req);
+  if (!auth.ok) {
+    return res.status(auth.status).json({ error: auth.error });
+  }
+  if (!auth.isAdmin) {
+    return res.status(403).json({ error: "Only admin can approve topics" });
+  }
+
+  const approved = req.body?.approved;
+  if (typeof approved !== "boolean") {
+    return res.status(400).json({ error: "approved must be boolean" });
+  }
+
+  try {
+    const { rows } = await pool.query(
+      `UPDATE topics
+          SET approved = $1
+        WHERE id = $2
+      RETURNING id, title, approved, created_at`,
+      [approved, req.params.id]
+    );
+    if (!rows[0]) return res.status(404).json({ error: "Topic not found" });
+    const t = rows[0];
+    res.json({
+      id: t.id,
+      title: t.title,
+      approved: t.approved,
+      createdAt: t.created_at?.getTime?.() ?? t.created_at,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to update topic approval" });
   }
 });
 

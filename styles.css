@@ -387,6 +387,13 @@ kbd {
   margin-bottom: 12px;
 }
 
+.adminTopicActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+
 .topicSelectWrap {
   position: relative;
 }
