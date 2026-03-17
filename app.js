@@ -205,7 +205,7 @@
       deleteBtn.dataset.action = "delete-argument";
       deleteBtn.dataset.topicId = topicId;
       deleteBtn.dataset.argumentId = arg.id;
-      deleteBtn.textContent = "Loeschen";
+      deleteBtn.textContent = "Delete";
       actions.appendChild(deleteBtn);
 
       li.appendChild(actions);
@@ -297,7 +297,7 @@
     }
     if (approveTopicBtn) {
       approveTopicBtn.disabled = !isAdmin || !hasTopic || Boolean(selectedTopic?.approved);
-      approveTopicBtn.textContent = selectedTopic?.approved ? "Freigegeben" : "Freigeben";
+      approveTopicBtn.textContent = selectedTopic?.approved ? "Approved" : "Approve";
     }
     if (deleteTopicBtn) {
       deleteTopicBtn.disabled = !isAdmin || !hasTopic;
