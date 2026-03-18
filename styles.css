@@ -782,3 +782,25 @@ code {
   gap: 10px;
 }
 
+.modalCard .btn {
+  color: rgba(255, 255, 255, 0.94);
+  border-color: rgba(255, 255, 255, 0.34);
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.modalCard .btn:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.modalCard .btnPrimary {
+  color: rgba(255, 255, 255, 0.98);
+  border-color: rgba(124, 92, 255, 0.82);
+  background: rgba(124, 92, 255, 0.44);
+}
+
+.modalCard .btnPrimary:hover {
+  border-color: rgba(124, 92, 255, 0.95);
+  background: rgba(124, 92, 255, 0.54);
+}
+
