@@ -791,6 +791,18 @@ code {
   color: rgba(255, 255, 255, 0.76);
 }
 
+.modalError {
+  margin: 0;
+  min-height: 20px;
+  color: rgba(255, 163, 176, 0.98);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.modalError:empty {
+  min-height: 0;
+}
+
 .modalActions {
   display: flex;
   justify-content: flex-end;

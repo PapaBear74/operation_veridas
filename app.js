@@ -12,6 +12,7 @@
   const createTopicModalForm = document.getElementById("createTopicModalForm");
   const createTopicTitleInput = document.getElementById("createTopicTitleInput");
   const createTopicPasswordInput = document.getElementById("createTopicPasswordInput");
+  const createTopicModalError = document.getElementById("createTopicModalError");
   const createTopicModalCancelBtn = document.getElementById("createTopicModalCancelBtn");
   const createTopicModalSubmitBtn = document.getElementById("createTopicModalSubmitBtn");
   const argumentInput = document.getElementById("argumentInput");
@@ -309,13 +310,11 @@
   async function createTopic(title, topicPassword) {
     const trimmed = String(title ?? "").trim();
     if (!trimmed) {
-      showToast("Topic title can't be empty");
-      return;
+      return { ok: false, error: "Topic title can't be empty" };
     }
     const safePassword = String(topicPassword ?? "").trim();
     if (!safePassword) {
-      showToast("Enter a password first");
-      return;
+      return { ok: false, error: "Enter a password first" };
     }
 
     try {
@@ -332,12 +331,16 @@
       await loadSummaries(selectedTopicId);
       render();
       showToast("Topic created");
-      return true;
+      return { ok: true };
     } catch (err) {
-      showToast(err.message || "Failed to create topic");
       console.error(err);
-      return false;
+      return { ok: false, error: err.message || "Failed to create topic" };
     }
+  }
+
+  function setCreateTopicModalError(message = "") {
+    if (!createTopicModalError) return;
+    createTopicModalError.textContent = String(message ?? "").trim();
   }
 
   function closeCreateTopicModal() {
@@ -350,6 +353,7 @@
     if (!createTopicModal) return;
     if (createTopicTitleInput) createTopicTitleInput.value = "";
     if (createTopicPasswordInput) createTopicPasswordInput.value = sessionPassword || "";
+    setCreateTopicModalError("");
     createTopicModal.classList.add("show");
     createTopicModal.setAttribute("aria-hidden", "false");
     createTopicTitleInput?.focus();
@@ -533,26 +537,30 @@
 
   createTopicModalForm?.addEventListener("submit", async (e) => {
     e.preventDefault();
+    setCreateTopicModalError("");
     const title = String(createTopicTitleInput?.value ?? "").trim();
     const password = String(createTopicPasswordInput?.value ?? "").trim();
 
     if (!title) {
-      showToast("Topic title can't be empty");
+      setCreateTopicModalError("Please enter a topic name.");
       createTopicTitleInput?.focus();
       return;
     }
 
     if (!password) {
-      showToast("Enter a password first");
+      setCreateTopicModalError("Please enter a password.");
       createTopicPasswordInput?.focus();
       return;
     }
 
     if (createTopicModalSubmitBtn) createTopicModalSubmitBtn.disabled = true;
-    const created = await createTopic(title, password);
+    const result = await createTopic(title, password);
     if (createTopicModalSubmitBtn) createTopicModalSubmitBtn.disabled = false;
 
-    if (!created) return;
+    if (!result.ok) {
+      setCreateTopicModalError(result.error || "Failed to create topic.");
+      return;
+    }
     closeCreateTopicModal();
     argumentInput.focus();
   });
