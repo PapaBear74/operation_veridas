@@ -3,6 +3,7 @@ import OpenAI from "openai";
 import pool from "../db/pool.js";
 import {
   getAuthContext,
+  getOptionalAuthContext,
   hashBoardPassword,
 } from "../lib/auth.js";
 
@@ -65,7 +66,7 @@ router.get("/me", (req, res) => {
 });
 
 router.get("/", async (req, res) => {
-  const auth = getAuthContext(req);
+  const auth = getOptionalAuthContext(req);
   if (!auth.ok) {
     return res.status(auth.status).json({ error: auth.error });
   }
@@ -75,11 +76,16 @@ router.get("/", async (req, res) => {
       ? `SELECT id, title, approved, created_at
            FROM topics
           ORDER BY created_at DESC`
+      : auth.passwordHash
+      ? `SELECT id, title, approved, created_at
+           FROM topics
+          WHERE access_hash = $1 OR access_hash IS NULL
+          ORDER BY created_at DESC`
       : `SELECT id, title, approved, created_at
            FROM topics
-          WHERE access_hash = $1
+          WHERE access_hash IS NULL
           ORDER BY created_at DESC`;
-    const params = auth.isAdmin ? [] : [auth.passwordHash];
+    const params = auth.isAdmin || !auth.passwordHash ? [] : [auth.passwordHash];
     const { rows } = await pool.query(query, params);
     res.json(rows.map((r) => ({ ...r, createdAt: r.created_at?.getTime?.() ?? r.created_at })));
   } catch (err) {
@@ -103,12 +109,12 @@ router.post("/", async (req, res) => {
   if (trimmed.length > 150) {
     return res.status(400).json({ error: "Title must be at most 150 characters" });
   }
-  if (!topicPassword) {
+  if (!auth.isAdmin && !topicPassword) {
     return res.status(400).json({ error: "Password is required" });
   }
 
   const adminPassword = String(process.env.ADMIN_PASSWORD ?? "");
-  if (adminPassword.length > 0 && topicPassword === adminPassword) {
+  if (!auth.isAdmin && adminPassword.length > 0 && topicPassword === adminPassword) {
     return res.status(400).json({ error: "Please choose a non-admin topic password" });
   }
 
@@ -129,7 +135,7 @@ router.post("/", async (req, res) => {
       });
     }
 
-    const topicPasswordHash = hashBoardPassword(topicPassword);
+    const topicPasswordHash = auth.isAdmin ? null : hashBoardPassword(topicPassword);
     const { rows } = await pool.query(
       `INSERT INTO topics (title, approved, access_hash)
        VALUES ($1, true, $2)

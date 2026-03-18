@@ -1,13 +1,13 @@
 import { Router } from "express";
 import pool from "../db/pool.js";
 import { runDailySummarization } from "../jobs/summarize.js";
-import { canAccessTopic, getAuthContext } from "../lib/auth.js";
+import { canAccessTopic, getAuthContext, getOptionalAuthContext } from "../lib/auth.js";
 
 const router = Router({ mergeParams: true });
 
 router.get("/", async (req, res) => {
   const { topicId } = req.params;
-  const auth = getAuthContext(req);
+  const auth = getOptionalAuthContext(req);
   if (!auth.ok) {
     return res.status(auth.status).json({ error: auth.error });
   }
@@ -38,7 +38,7 @@ router.get("/", async (req, res) => {
 router.post("/", async (req, res) => {
   const { topicId } = req.params;
   const { side, text } = req.body;
-  const auth = getAuthContext(req);
+  const auth = getOptionalAuthContext(req);
   if (!auth.ok) {
     return res.status(auth.status).json({ error: auth.error });
   }

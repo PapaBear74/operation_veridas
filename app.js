@@ -74,11 +74,6 @@
   }
 
   async function loadTopics() {
-    if (!sessionPassword) {
-      topics = [];
-      selectedTopicId = null;
-      return;
-    }
     topics = await api("/api/topics");
     if (topics.length && !selectedTopicId) selectedTopicId = topics[0].id;
     if (selectedTopicId && !topics.find((t) => t.id === selectedTopicId)) {
@@ -291,8 +286,8 @@
 
     if (!topics.length) {
       emptyState.textContent = sessionPassword
-        ? "No topics for this password yet. Create one below."
-        : "No topic selected. Enter a password below and open or create a topic.";
+        ? "No topics for this password yet. Public topics are shown automatically."
+        : "No topics yet. Public topics are shown automatically.";
       setEmptyStateVisible(true);
     } else if (selectedTopic && arguments_.length === 0 && summaries.length === 0) {
       emptyState.textContent = "No arguments yet. Write the first one.";
@@ -313,12 +308,12 @@
       return { ok: false, error: "Topic title can't be empty" };
     }
     const safePassword = String(topicPassword ?? "").trim();
-    if (!safePassword) {
+    if (!isAdmin && !safePassword) {
       return { ok: false, error: "Enter a password first" };
     }
 
     try {
-      if (!sessionPassword || sessionPassword !== safePassword) {
+      if (!isAdmin && (!sessionPassword || sessionPassword !== safePassword)) {
         sessionPassword = safePassword;
       }
       await api("/api/topics", {
@@ -352,7 +347,9 @@
   function openCreateTopicModal() {
     if (!createTopicModal) return;
     if (createTopicTitleInput) createTopicTitleInput.value = "";
-    if (createTopicPasswordInput) createTopicPasswordInput.value = sessionPassword || "";
+    if (createTopicPasswordInput) {
+      createTopicPasswordInput.value = isAdmin ? "" : sessionPassword || "";
+    }
     setCreateTopicModalError("");
     createTopicModal.classList.add("show");
     createTopicModal.setAttribute("aria-hidden", "false");
@@ -547,7 +544,7 @@
       return;
     }
 
-    if (!password) {
+    if (!isAdmin && !password) {
       setCreateTopicModalError("Please enter a password.");
       createTopicPasswordInput?.focus();
       return;
@@ -571,7 +568,17 @@
     closeCreateTopicModal();
   });
 
-  function init() {
+  async function init() {
+    try {
+      await loadTopics();
+      if (selectedTopicId) {
+        await loadArguments(selectedTopicId);
+        await loadSummaries(selectedTopicId);
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to load topics");
+    }
     render();
     accessTopicBtn?.focus();
   }
