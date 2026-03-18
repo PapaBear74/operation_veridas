@@ -1,12 +1,60 @@
 import { Router } from "express";
+import OpenAI from "openai";
 import pool from "../db/pool.js";
 import {
   getAuthContext,
   hashBoardPassword,
-  userHasAnyAccessibleApprovedTopic,
 } from "../lib/auth.js";
 
 const router = Router();
+const openai = process.env.OPENAI_API_KEY
+  ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+  : null;
+
+async function moderateTopicTitle(title) {
+  if (!openai) {
+    return {
+      allowed: false,
+      reason: "KI-Pruefung ist gerade nicht verfuegbar. Bitte spaeter erneut versuchen.",
+    };
+  }
+
+  const prompt = `Pruefe, ob dieses Diskussionsthema zugelassen werden soll:
+"${title}"
+
+Lehne das Thema ab, wenn mindestens einer dieser Punkte zutrifft:
+- Beleidigungen oder Beschimpfungen.
+- Nennung einzelner Personen bei Vor- oder Nachnamen, AUSSER allgemein bekannte Staatsoberhaeupter oder Politiker
+  (z.B. Trump, Putin, Netanjahu, Khamenei).
+- Off-Topic-Inhalt oder nichts Sachliches fuer ein Diskussionsthema.
+- Persoenliche Daten (Adressen, Telefonnummern etc.).
+
+Gib NUR gueltiges JSON zurueck:
+{
+  "allowed": true oder false,
+  "reason": "kurze Begruendung auf Deutsch fuer den Nutzer"
+}`;
+
+  const completion = await openai.chat.completions.create({
+    model: "gpt-4.1-mini",
+    temperature: 0,
+    messages: [{ role: "user", content: prompt }],
+    max_tokens: 250,
+  });
+
+  const raw = completion.choices[0]?.message?.content?.trim() ?? "";
+  const cleaned = raw.replace(/^```(?:json)?\s*\n?/i, "").replace(/\n?```\s*$/i, "");
+  let parsed;
+  try {
+    parsed = JSON.parse(cleaned);
+  } catch {
+    throw new Error("Failed to parse AI moderation response");
+  }
+
+  const allowed = Boolean(parsed?.allowed);
+  const reason = String(parsed?.reason ?? "").trim();
+  return { allowed, reason };
+}
 
 router.get("/me", (req, res) => {
   const auth = getAuthContext(req);
@@ -29,13 +77,10 @@ router.get("/", async (req, res) => {
           ORDER BY created_at DESC`
       : `SELECT id, title, approved, created_at
            FROM topics
-          WHERE approved = true AND access_hash = $1
+          WHERE access_hash = $1
           ORDER BY created_at DESC`;
     const params = auth.isAdmin ? [] : [auth.passwordHash];
     const { rows } = await pool.query(query, params);
-    if (!auth.isAdmin && rows.length === 0) {
-      return res.status(403).json({ error: "No approved topics for this password" });
-    }
     res.json(rows.map((r) => ({ ...r, createdAt: r.created_at?.getTime?.() ?? r.created_at })));
   } catch (err) {
     console.error(err);
@@ -68,19 +113,26 @@ router.post("/", async (req, res) => {
   }
 
   try {
-    if (!auth.isAdmin) {
-      const canCreate = await userHasAnyAccessibleApprovedTopic(pool, auth.passwordHash);
-      if (!canCreate) {
-        return res.status(403).json({
-          error: "You can request topics only after logging in with a password that already has topics",
-        });
-      }
+    let moderation;
+    try {
+      moderation = await moderateTopicTitle(trimmed);
+    } catch (moderationErr) {
+      console.error("Topic moderation failed:", moderationErr);
+      return res.status(503).json({
+        error: "Die KI-Pruefung ist fehlgeschlagen. Bitte spaeter erneut versuchen.",
+      });
+    }
+
+    if (!moderation.allowed) {
+      return res.status(422).json({
+        error: moderation.reason || "Topic was rejected by AI moderation",
+      });
     }
 
     const topicPasswordHash = hashBoardPassword(topicPassword);
     const { rows } = await pool.query(
       `INSERT INTO topics (title, approved, access_hash)
-       VALUES ($1, false, $2)
+       VALUES ($1, true, $2)
        RETURNING id, title, approved, created_at`,
       [trimmed, topicPasswordHash]
     );

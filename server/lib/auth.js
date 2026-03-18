@@ -36,7 +36,7 @@ export function getAuthContext(req) {
 
 export async function userHasAnyAccessibleApprovedTopic(client, passwordHash) {
   const { rowCount } = await client.query(
-    `SELECT 1 FROM topics WHERE approved = true AND access_hash = $1 LIMIT 1`,
+    `SELECT 1 FROM topics WHERE access_hash = $1 LIMIT 1`,
     [passwordHash]
   );
   return rowCount > 0;
@@ -48,7 +48,6 @@ export async function canAccessTopic(client, topicId, authCtx) {
     `SELECT 1
        FROM topics
       WHERE id = $1
-        AND approved = true
         AND access_hash = $2
       LIMIT 1`,
     [topicId, authCtx.passwordHash]

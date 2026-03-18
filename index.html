@@ -14,19 +14,6 @@
 </head>
 
 <body>
-  <div id="loginOverlay" class="loginOverlay" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
-    <form id="loginForm" class="loginCard" autocomplete="off">
-      <h2 id="loginTitle">Enter Password</h2>
-      <p class="loginText">Enter your board password to view topics.</p>
-      <label class="field">
-        <span class="fieldLabel">Password</span>
-        <input id="loginPasswordInput" name="password" type="password" required />
-      </label>
-      <p id="loginError" class="loginError" role="status" aria-live="polite"></p>
-      <button id="loginSubmitBtn" class="btn btnPrimary" type="submit">Continue</button>
-    </form>
-  </div>
-
   <div class="app">
     <header class="header">
       <h1>LETTERWARS Board</h1>
@@ -42,13 +29,12 @@
             <div id="topicSelectDisplay" class="topicSelectDisplay" aria-hidden="true"></div>
           </div>
           <div id="adminTopicActions" class="adminTopicActions" style="display:none">
-            <button id="approveTopicBtn" class="btn btnPrimary" type="button">Approve</button>
             <button id="deleteTopicBtn" class="btn btnDanger" type="button">Delete topic</button>
           </div>
         </div>
 
         <div id="emptyState" class="emptyState" role="status" aria-live="polite">
-          No topics yet. Request one below.
+          No topics yet. Enter a password below and create or open a topic.
         </div>
 
         <div id="board" class="board" aria-label="Arguments list">
@@ -106,6 +92,10 @@
       <div class="createTopicRow">
         <input id="newTopicInput" name="newTopic" type="text" maxlength="150" placeholder="Request a new topic…" />
         <button id="createTopicBtn" class="btn btnPrimary" type="button">Create</button>
+      </div>
+      <div class="createTopicRow">
+        <input id="topicPasswordInput" name="topicPassword" type="password" placeholder="Password for topic access..." />
+        <button id="accessTopicBtn" class="btn" type="button">Access topics</button>
       </div>
     </footer>
   </div>

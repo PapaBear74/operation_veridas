@@ -5,8 +5,9 @@
   const topicSelect = document.getElementById("topicSelect");
   const topicSelectDisplay = document.getElementById("topicSelectDisplay");
   const adminTopicActions = document.getElementById("adminTopicActions");
-  const approveTopicBtn = document.getElementById("approveTopicBtn");
   const deleteTopicBtn = document.getElementById("deleteTopicBtn");
+  const topicPasswordInput = document.getElementById("topicPasswordInput");
+  const accessTopicBtn = document.getElementById("accessTopicBtn");
   const newTopicInput = document.getElementById("newTopicInput");
   const createTopicBtn = document.getElementById("createTopicBtn");
   const argumentInput = document.getElementById("argumentInput");
@@ -15,11 +16,6 @@
   const emptyState = document.getElementById("emptyState");
   const toast = document.getElementById("toast");
   const boardLoading = document.getElementById("boardLoading");
-  const loginOverlay = document.getElementById("loginOverlay");
-  const loginForm = document.getElementById("loginForm");
-  const loginPasswordInput = document.getElementById("loginPasswordInput");
-  const loginError = document.getElementById("loginError");
-  const loginSubmitBtn = document.getElementById("loginSubmitBtn");
 
   /** @typedef {"pro" | "contra"} Side */
   /** @typedef {{id:string, side:Side, text:string, createdAt:number}} Argument */
@@ -58,19 +54,10 @@
     return res.json();
   }
 
-  function setLoginVisible(visible) {
-    if (!loginOverlay) return;
-    loginOverlay.style.display = visible ? "flex" : "none";
-  }
-
-  function setLoginError(message) {
-    if (!loginError) return;
-    loginError.textContent = message ?? "";
-  }
-
-  async function loginWithPassword(password) {
+  async function loadSessionForPassword(password) {
     sessionPassword = password;
     await loadTopics();
+    await loadAdminStatus();
     if (selectedTopicId) {
       await loadArguments(selectedTopicId);
       await loadSummaries(selectedTopicId);
@@ -81,16 +68,12 @@
     render();
   }
 
-  function askForTopicPassword(defaultValue = "") {
-    const entered = window.prompt(
-      "Enter a password for this requested topic.\nThis password can be used for multiple topics.",
-      defaultValue
-    );
-    if (entered === null) return null;
-    return String(entered).trim();
-  }
-
   async function loadTopics() {
+    if (!sessionPassword) {
+      topics = [];
+      selectedTopicId = null;
+      return;
+    }
     topics = await api("/api/topics");
     if (topics.length && !selectedTopicId) selectedTopicId = topics[0].id;
     if (selectedTopicId && !topics.find((t) => t.id === selectedTopicId)) {
@@ -167,7 +150,7 @@
     for (const t of topics) {
       const opt = document.createElement("option");
       opt.value = t.id;
-      opt.textContent = isAdmin && !t.approved ? `${t.title} (pending)` : t.title;
+      opt.textContent = t.title;
       frag.appendChild(opt);
     }
     topicSelect.appendChild(frag);
@@ -295,10 +278,6 @@
     if (adminTopicActions) {
       adminTopicActions.style.display = isAdmin ? "flex" : "none";
     }
-    if (approveTopicBtn) {
-      approveTopicBtn.disabled = !isAdmin || !hasTopic || Boolean(selectedTopic?.approved);
-      approveTopicBtn.textContent = selectedTopic?.approved ? "Approved" : "Approve";
-    }
     if (deleteTopicBtn) {
       deleteTopicBtn.disabled = !isAdmin || !hasTopic;
     }
@@ -306,7 +285,9 @@
     renderBoard(selectedTopic);
 
     if (!topics.length) {
-      emptyState.textContent = "No topics yet. Request one below.";
+      emptyState.textContent = sessionPassword
+        ? "No topics for this password yet. Create one below."
+        : "No topic selected. Enter a password below and open or create a topic.";
       setEmptyStateVisible(true);
     } else if (selectedTopic && arguments_.length === 0 && summaries.length === 0) {
       emptyState.textContent = "No arguments yet. Write the first one.";
@@ -322,17 +303,16 @@
       showToast("Topic title can't be empty");
       return;
     }
-    const topicPassword = askForTopicPassword(sessionPassword);
-    if (topicPassword === null) {
-      showToast("Topic request cancelled");
-      return;
-    }
+    const topicPassword = String(topicPasswordInput?.value ?? "").trim();
     if (!topicPassword) {
-      showToast("Topic password can't be empty");
+      showToast("Enter a password first");
       return;
     }
 
     try {
+      if (!sessionPassword || sessionPassword !== topicPassword) {
+        sessionPassword = topicPassword;
+      }
       await api("/api/topics", {
         method: "POST",
         body: JSON.stringify({ title: trimmed, password: topicPassword }),
@@ -342,7 +322,7 @@
       await loadArguments(selectedTopicId);
       await loadSummaries(selectedTopicId);
       render();
-      showToast("Topic submitted. It will appear after approval.");
+      showToast("Topic created");
     } catch (err) {
       showToast(err.message || "Failed to create topic");
       console.error(err);
@@ -380,25 +360,6 @@
       console.error(err);
     } finally {
       showBoardLoading(false);
-    }
-  }
-
-  async function approveTopic(topicId) {
-    if (!isAdmin) return;
-    try {
-      await api(`/api/topics/${topicId}/approval`, {
-        method: "PATCH",
-        body: JSON.stringify({ approved: true }),
-      });
-      await loadTopics();
-      selectedTopicId = topicId;
-      await loadArguments(topicId);
-      await loadSummaries(topicId);
-      render();
-      showToast("Topic freigegeben");
-    } catch (err) {
-      showToast(err.message || "Freigabe fehlgeschlagen");
-      console.error(err);
     }
   }
 
@@ -464,12 +425,6 @@
 
   topicSelect.addEventListener("change", onTopicChange);
 
-  approveTopicBtn?.addEventListener("click", async () => {
-    const selected = getSelectedTopic();
-    if (!selected) return;
-    await approveTopic(selected.id);
-  });
-
   deleteTopicBtn?.addEventListener("click", async () => {
     const selected = getSelectedTopic();
     if (!selected) return;
@@ -514,44 +469,47 @@
   proList.addEventListener("click", onArgumentListClick);
   contraList.addEventListener("click", onArgumentListClick);
 
-  async function onLoginSubmit(e) {
-    e.preventDefault();
-    const password = String(loginPasswordInput?.value ?? "").trim();
+  async function accessTopicsWithPassword(password) {
     if (!password) {
-      setLoginError("Password is required");
+      showToast("Enter a password first");
       return;
     }
 
-    setLoginError("");
-    if (loginSubmitBtn) loginSubmitBtn.disabled = true;
+    if (accessTopicBtn) accessTopicBtn.disabled = true;
 
     try {
-      await loginWithPassword(password);
-      await loadAdminStatus();
-      render();
-      setLoginVisible(false);
-      if (loginPasswordInput) loginPasswordInput.value = "";
+      await loadSessionForPassword(password);
+      showToast(topics.length ? "Topics loaded" : "No topics found for this password");
     } catch (err) {
       sessionPassword = "";
       isAdmin = false;
-      if (err?.status === 401 || err?.status === 403) {
-        setLoginError(err.message || "Password invalid or not approved");
-      } else {
-        setLoginError("Failed to load data. Is the server running?");
-      }
+      topics = [];
+      selectedTopicId = null;
+      arguments_ = [];
+      summaries = [];
+      render();
+      showToast(err.message || "Failed to load topics");
       console.error(err);
     } finally {
-      if (loginSubmitBtn) loginSubmitBtn.disabled = false;
-      loginPasswordInput?.focus();
-      loginPasswordInput?.select();
+      if (accessTopicBtn) accessTopicBtn.disabled = false;
     }
   }
 
+  accessTopicBtn?.addEventListener("click", () => {
+    const password = String(topicPasswordInput?.value ?? "").trim();
+    accessTopicsWithPassword(password);
+  });
+
+  topicPasswordInput?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      accessTopicBtn?.click();
+    }
+  });
+
   function init() {
-    setLoginVisible(true);
-    if (!loginForm) return;
-    loginForm.addEventListener("submit", onLoginSubmit);
-    loginPasswordInput?.focus();
+    render();
+    topicPasswordInput?.focus();
   }
 
   init();

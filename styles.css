@@ -153,6 +153,8 @@ h1 {
   border-radius: var(--radius);
   background: linear-gradient(180deg, var(--panel2), var(--panel));
   box-shadow: var(--shadow);
+  display: grid;
+  gap: 10px;
 }
 
 .createTopicRow {
