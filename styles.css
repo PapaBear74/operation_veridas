@@ -154,7 +154,9 @@ h1 {
   background: linear-gradient(180deg, var(--panel2), var(--panel));
   box-shadow: var(--shadow);
   display: grid;
+  grid-template-columns: minmax(280px, 0.9fr) minmax(420px, 1.4fr);
   gap: 10px;
+  align-items: center;
 }
 
 .createTopicRow {
@@ -166,6 +168,20 @@ h1 {
 .createTopicRow input {
   flex: 1;
   min-width: 0;
+}
+
+.createTopicRowAccess input {
+  flex: 0 1 220px;
+}
+
+.createTopicRowCreate input {
+  flex: 1 1 auto;
+}
+
+@media (max-width: 900px) {
+  .createTopicSection {
+    grid-template-columns: 1fr;
+  }
 }
 
 .composer,
