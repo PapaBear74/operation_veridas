@@ -769,11 +769,26 @@ code {
   padding: 16px;
   display: grid;
   gap: 12px;
+  color: rgba(255, 255, 255, 0.94);
 }
 
 .modalForm {
   display: grid;
   gap: 10px;
+}
+
+.modalCard h2 {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.98);
+}
+
+.modalCard .fieldLabel {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.modalCard .hint {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.76);
 }
 
 .modalActions {
