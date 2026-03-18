@@ -89,8 +89,8 @@
     </main>
 
     <footer class="createTopicSection">
-      <button id="accessTopicBtn" class="btn" type="button">Direkt zugreifen</button>
-      <button id="createTopicBtn" class="btn btnPrimary" type="button">Erstellen</button>
+      <button id="accessTopicBtn" class="btn btnTopicAction" type="button">Access existing topic</button>
+      <button id="createTopicBtn" class="btn btnTopicAction" type="button">Create topic</button>
     </footer>
   </div>
 
@@ -98,19 +98,19 @@
 
   <div id="createTopicModal" class="modalOverlay" aria-hidden="true">
     <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="createTopicModalTitle">
-      <h2 id="createTopicModalTitle">Neues Thema erstellen</h2>
+      <h2 id="createTopicModalTitle">Create topic</h2>
       <form id="createTopicModalForm" class="modalForm" autocomplete="off">
         <label class="field">
-          <span class="fieldLabel">Thema</span>
-          <input id="createTopicTitleInput" name="topicTitle" type="text" maxlength="150" placeholder="Thema eingeben..." />
+          <span class="fieldLabel">Topic</span>
+          <input id="createTopicTitleInput" name="topicTitle" type="text" maxlength="150" placeholder="Enter topic..." />
         </label>
         <label class="field">
-          <span class="fieldLabel">Passwort</span>
-          <input id="createTopicPasswordInput" name="topicPassword" type="password" placeholder="Passwort eingeben..." />
+          <span class="fieldLabel">Password</span>
+          <input id="createTopicPasswordInput" name="topicPassword" type="password" placeholder="Enter password..." />
         </label>
         <div class="modalActions">
-          <button id="createTopicModalCancelBtn" class="btn" type="button">Abbrechen</button>
-          <button id="createTopicModalSubmitBtn" class="btn btnPrimary" type="submit">Erstellen</button>
+          <button id="createTopicModalCancelBtn" class="btn" type="button">Cancel</button>
+          <button id="createTopicModalSubmitBtn" class="btn btnPrimary" type="submit">Create topic</button>
         </div>
       </form>
     </div>

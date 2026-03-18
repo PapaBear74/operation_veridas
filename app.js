@@ -301,7 +301,7 @@
     }
   }
 
-  function promptForPassword(message = "Bitte Passwort eingeben") {
+  function promptForPassword(message = "Enter password") {
     const value = window.prompt(message, sessionPassword || "");
     return String(value ?? "").trim();
   }
@@ -513,7 +513,7 @@
   }
 
   accessTopicBtn?.addEventListener("click", () => {
-    const password = promptForPassword("Passwort fuer Zugriff eingeben");
+    const password = promptForPassword("Enter password to access existing topics");
     if (!password) {
       showToast("Enter a password first");
       return;

@@ -370,6 +370,18 @@ kbd {
   background: rgba(124, 92, 255, 0.24);
 }
 
+.btnTopicAction {
+  border-color: rgba(124, 92, 255, 0.45);
+  background: rgba(124, 92, 255, 0.18);
+  opacity: 0.55;
+}
+
+.btnTopicAction:hover {
+  border-color: rgba(124, 92, 255, 0.45);
+  background: rgba(124, 92, 255, 0.18);
+  opacity: 0.7;
+}
+
 .btnDanger {
   border-color: rgba(255, 77, 109, 0.45);
   background: var(--dangerBg);
