@@ -89,18 +89,32 @@
     </main>
 
     <footer class="createTopicSection">
-      <div class="createTopicRow createTopicRowAccess">
-        <input id="topicPasswordInput" name="topicPassword" type="password" placeholder="Password for topic access..." />
-        <button id="accessTopicBtn" class="btn" type="button">Access topics</button>
-      </div>
-      <div class="createTopicRow createTopicRowCreate">
-        <input id="newTopicInput" name="newTopic" type="text" maxlength="150" placeholder="Request a new topic…" />
-        <button id="createTopicBtn" class="btn btnPrimary" type="button">Create</button>
-      </div>
+      <button id="accessTopicBtn" class="btn" type="button">Direkt zugreifen</button>
+      <button id="createTopicBtn" class="btn btnPrimary" type="button">Erstellen</button>
     </footer>
   </div>
 
   <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <div id="createTopicModal" class="modalOverlay" aria-hidden="true">
+    <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="createTopicModalTitle">
+      <h2 id="createTopicModalTitle">Neues Thema erstellen</h2>
+      <form id="createTopicModalForm" class="modalForm" autocomplete="off">
+        <label class="field">
+          <span class="fieldLabel">Thema</span>
+          <input id="createTopicTitleInput" name="topicTitle" type="text" maxlength="150" placeholder="Thema eingeben..." />
+        </label>
+        <label class="field">
+          <span class="fieldLabel">Passwort</span>
+          <input id="createTopicPasswordInput" name="topicPassword" type="password" placeholder="Passwort eingeben..." />
+        </label>
+        <div class="modalActions">
+          <button id="createTopicModalCancelBtn" class="btn" type="button">Abbrechen</button>
+          <button id="createTopicModalSubmitBtn" class="btn btnPrimary" type="submit">Erstellen</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <script src="./app.js" defer></script>
 </body>

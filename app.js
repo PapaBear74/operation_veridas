@@ -6,10 +6,14 @@
   const topicSelectDisplay = document.getElementById("topicSelectDisplay");
   const adminTopicActions = document.getElementById("adminTopicActions");
   const deleteTopicBtn = document.getElementById("deleteTopicBtn");
-  const topicPasswordInput = document.getElementById("topicPasswordInput");
   const accessTopicBtn = document.getElementById("accessTopicBtn");
-  const newTopicInput = document.getElementById("newTopicInput");
   const createTopicBtn = document.getElementById("createTopicBtn");
+  const createTopicModal = document.getElementById("createTopicModal");
+  const createTopicModalForm = document.getElementById("createTopicModalForm");
+  const createTopicTitleInput = document.getElementById("createTopicTitleInput");
+  const createTopicPasswordInput = document.getElementById("createTopicPasswordInput");
+  const createTopicModalCancelBtn = document.getElementById("createTopicModalCancelBtn");
+  const createTopicModalSubmitBtn = document.getElementById("createTopicModalSubmitBtn");
   const argumentInput = document.getElementById("argumentInput");
   const proList = document.getElementById("proList");
   const contraList = document.getElementById("contraList");
@@ -297,25 +301,30 @@
     }
   }
 
-  async function createTopic(title) {
+  function promptForPassword(message = "Bitte Passwort eingeben") {
+    const value = window.prompt(message, sessionPassword || "");
+    return String(value ?? "").trim();
+  }
+
+  async function createTopic(title, topicPassword) {
     const trimmed = String(title ?? "").trim();
     if (!trimmed) {
       showToast("Topic title can't be empty");
       return;
     }
-    const topicPassword = String(topicPasswordInput?.value ?? "").trim();
-    if (!topicPassword) {
+    const safePassword = String(topicPassword ?? "").trim();
+    if (!safePassword) {
       showToast("Enter a password first");
       return;
     }
 
     try {
-      if (!sessionPassword || sessionPassword !== topicPassword) {
-        sessionPassword = topicPassword;
+      if (!sessionPassword || sessionPassword !== safePassword) {
+        sessionPassword = safePassword;
       }
       await api("/api/topics", {
         method: "POST",
-        body: JSON.stringify({ title: trimmed, password: topicPassword }),
+        body: JSON.stringify({ title: trimmed, password: safePassword }),
       });
       await loadTopics();
       selectedTopicId = topics[0]?.id ?? null;
@@ -323,10 +332,27 @@
       await loadSummaries(selectedTopicId);
       render();
       showToast("Topic created");
+      return true;
     } catch (err) {
       showToast(err.message || "Failed to create topic");
       console.error(err);
+      return false;
     }
+  }
+
+  function closeCreateTopicModal() {
+    if (!createTopicModal) return;
+    createTopicModal.classList.remove("show");
+    createTopicModal.setAttribute("aria-hidden", "true");
+  }
+
+  function openCreateTopicModal() {
+    if (!createTopicModal) return;
+    if (createTopicTitleInput) createTopicTitleInput.value = "";
+    if (createTopicPasswordInput) createTopicPasswordInput.value = sessionPassword || "";
+    createTopicModal.classList.add("show");
+    createTopicModal.setAttribute("aria-hidden", "false");
+    createTopicTitleInput?.focus();
   }
 
   async function addArgument(topicId, side, text) {
@@ -410,17 +436,8 @@
     render();
   }
 
-  createTopicBtn.addEventListener("click", () => {
-    createTopic(newTopicInput.value);
-    newTopicInput.value = "";
-    argumentInput.focus();
-  });
-
-  newTopicInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      createTopicBtn.click();
-    }
+  createTopicBtn?.addEventListener("click", async () => {
+    openCreateTopicModal();
   });
 
   topicSelect.addEventListener("change", onTopicChange);
@@ -496,20 +513,59 @@
   }
 
   accessTopicBtn?.addEventListener("click", () => {
-    const password = String(topicPasswordInput?.value ?? "").trim();
+    const password = promptForPassword("Passwort fuer Zugriff eingeben");
+    if (!password) {
+      showToast("Enter a password first");
+      return;
+    }
     accessTopicsWithPassword(password);
   });
 
-  topicPasswordInput?.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      accessTopicBtn?.click();
+  createTopicModalCancelBtn?.addEventListener("click", () => {
+    closeCreateTopicModal();
+  });
+
+  createTopicModal?.addEventListener("click", (e) => {
+    if (e.target === createTopicModal) {
+      closeCreateTopicModal();
     }
+  });
+
+  createTopicModalForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const title = String(createTopicTitleInput?.value ?? "").trim();
+    const password = String(createTopicPasswordInput?.value ?? "").trim();
+
+    if (!title) {
+      showToast("Topic title can't be empty");
+      createTopicTitleInput?.focus();
+      return;
+    }
+
+    if (!password) {
+      showToast("Enter a password first");
+      createTopicPasswordInput?.focus();
+      return;
+    }
+
+    if (createTopicModalSubmitBtn) createTopicModalSubmitBtn.disabled = true;
+    const created = await createTopic(title, password);
+    if (createTopicModalSubmitBtn) createTopicModalSubmitBtn.disabled = false;
+
+    if (!created) return;
+    closeCreateTopicModal();
+    argumentInput.focus();
+  });
+
+  window.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    if (!createTopicModal?.classList.contains("show")) return;
+    closeCreateTopicModal();
   });
 
   function init() {
     render();
-    topicPasswordInput?.focus();
+    accessTopicBtn?.focus();
   }
 
   init();
